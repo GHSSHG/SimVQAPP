@@ -1,0 +1,44 @@
+{
+  "name": "simvq-desktop",
+  "version": "0.1.0",
+  "description": "Electron desktop shell for the SimVQ inference CLI",
+  "private": true,
+  "main": "electron/main.js",
+  "scripts": {
+    "desktop:dev": "electron .",
+    "desktop:smoke": "node electron/scripts/smoke.cjs",
+    "desktop:pack": "electron-builder --dir",
+    "desktop:dist": "electron-builder"
+  },
+  "devDependencies": {
+    "electron": "^41.1.1",
+    "electron-builder": "^26.8.1"
+  },
+  "build": {
+    "appId": "com.simvq.desktop",
+    "productName": "SimVQ",
+    "asar": false,
+    "files": [
+      "electron/**/*",
+      "src/**/*",
+      "pyproject.toml",
+      "README.md",
+      "package.json"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "mac": {
+      "target": [
+        "dir",
+        "zip"
+      ]
+    },
+    "linux": {
+      "target": [
+        "dir",
+        "tar.gz"
+      ]
+    }
+  }
+}

@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SimVQ Desktop</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">SV</div>
+          <div>
+            <h1>SimVQ Desktop</h1>
+            <p>CLI 外壳 / 推理工作台</p>
+          </div>
+        </div>
+
+        <nav class="nav">
+          <button class="nav-button active" data-view-target="home">主页 / Doctor</button>
+          <button class="nav-button" data-view-target="models">模型</button>
+          <button class="nav-button" data-view-target="encode">压缩 Encode</button>
+          <button class="nav-button" data-view-target="decode">重建 Decode</button>
+          <button class="nav-button" data-view-target="inspect">Inspect</button>
+          <button class="nav-button" data-view-target="tasks">任务 / 历史</button>
+        </nav>
+
+        <div class="sidebar-footer">
+          <div id="settings-summary" class="mini-block"></div>
+          <div id="versions-summary" class="mini-block muted"></div>
+        </div>
+      </aside>
+
+      <main class="content">
+        <datalist id="all-models-list"></datalist>
+
+        <header class="topbar">
+          <div>
+            <h2 id="view-title">主页 / Doctor</h2>
+            <p id="view-subtitle">检查环境、保存 Python 与仓库路径，并查看 CLI 健康状态。</p>
+          </div>
+          <div class="toolbar">
+            <button id="refresh-all-button" class="ghost-button">刷新全部</button>
+          </div>
+        </header>
+
+        <section id="view-home" class="view active">
+          <div class="grid two">
+            <article class="panel">
+              <div class="panel-header">
+                <h3>运行设置</h3>
+              </div>
+              <form id="settings-form" class="form">
+                <label>
+                  <span>Python 可执行文件</span>
+                  <input id="settings-python" type="text" placeholder="python3" />
+                </label>
+                <label>
+                  <span>SimVQ 仓库根目录</span>
+                  <div class="input-row">
+                    <input id="settings-repo-root" type="text" placeholder="/path/to/SimVQApp" />
+                    <button type="button" id="settings-repo-browse" class="ghost-button">选择目录</button>
+                  </div>
+                </label>
+                <label>
+                  <span>远程模型目录 URL（可留空）</span>
+                  <input id="settings-catalog-url" type="text" placeholder="https://example.com/catalog.json" />
+                </label>
+                <div class="button-row">
+                  <button type="submit">保存设置</button>
+                  <button type="button" id="doctor-run-button" class="ghost-button">运行 Doctor</button>
+                </div>
+              </form>
+              <div id="settings-message" class="message"></div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-header">
+                <h3>Doctor 结果</h3>
+              </div>
+              <div id="doctor-summary" class="doctor-summary empty">尚未运行。</div>
+              <pre id="doctor-json" class="json-output"></pre>
+            </article>
+          </div>
+        </section>
+
+        <section id="view-models" class="view">
+          <div class="grid two">
+            <article class="panel">
+              <div class="panel-header inline">
+                <h3>远程模型</h3>
+                <div class="button-row compact">
+                  <input id="models-catalog-url" type="text" placeholder="沿用设置中的 catalog URL" />
+                  <button id="models-refresh-remote" type="button" class="ghost-button">刷新远程</button>
+                </div>
+              </div>
+              <div id="remote-models-list" class="card-list empty">暂无数据。</div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-header inline">
+                <h3>本地模型</h3>
+                <button id="models-refresh-local" type="button" class="ghost-button">刷新本地</button>
+              </div>
+              <div id="local-models-list" class="card-list empty">暂无本地模型。</div>
+            </article>
+          </div>
+
+          <div class="grid two">
+            <article class="panel">
+              <div class="panel-header">
+                <h3>注册本地模型</h3>
+              </div>
+              <form id="register-model-form" class="form">
+                <label>
+                  <span>模型名</span>
+                  <input id="register-name" type="text" placeholder="simvq-v45-3x" />
+                </label>
+                <label>
+                  <span>Checkpoint 目录</span>
+                  <div class="input-row">
+                    <input id="register-checkpoint" type="text" placeholder="/path/to/checkpoint_1200000" />
+                    <button type="button" id="register-checkpoint-browse" class="ghost-button">选择目录</button>
+                  </div>
+                </label>
+                <label>
+                  <span>来源仓库</span>
+                  <div class="input-row">
+                    <input id="register-source-repo" type="text" placeholder="/path/to/SimVQGAN" />
+                    <button type="button" id="register-source-repo-browse" class="ghost-button">选择目录</button>
+                  </div>
+                </label>
+                <label>
+                  <span>配置 JSON</span>
+                  <div class="input-row">
+                    <input id="register-config-json" type="text" placeholder="/path/to/train.json" />
+                    <button type="button" id="register-config-json-browse" class="ghost-button">选择文件</button>
+                  </div>
+                </label>
+                <div class="grid two compact-grid">
+                  <label>
+                    <span>版本（可留空）</span>
+                    <input id="register-version" type="text" placeholder="1200000" />
+                  </label>
+                  <label>
+                    <span>Variant</span>
+                    <input id="register-variant" type="text" value="v45" />
+                  </label>
+                </div>
+                <label class="checkbox">
+                  <input id="register-overwrite" type="checkbox" />
+                  <span>允许覆盖已有同名版本</span>
+                </label>
+                <div class="button-row">
+                  <button type="submit">注册模型</button>
+                </div>
+              </form>
+              <div id="models-message" class="message"></div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-header">
+                <h3>模型详情</h3>
+              </div>
+              <pre id="model-detail-json" class="json-output"></pre>
+            </article>
+          </div>
+        </section>
+
+        <section id="view-encode" class="view">
+          <div class="grid two">
+            <article class="panel">
+              <div class="panel-header">
+                <h3>Encode 任务</h3>
+              </div>
+              <form id="encode-form" class="form">
+                <label>
+                  <span>输入 POD5</span>
+                  <div class="input-row">
+                    <input id="encode-input" type="text" placeholder="/path/to/input.pod5" />
+                    <button type="button" id="encode-input-browse" class="ghost-button">选择文件</button>
+                  </div>
+                </label>
+                <label>
+                  <span>输出 Bundle</span>
+                  <div class="input-row">
+                    <input id="encode-output" type="text" placeholder="/path/to/output.vq.tar.gz" />
+                    <button type="button" id="encode-output-browse" class="ghost-button">保存到</button>
+                  </div>
+                </label>
+                <label>
+                  <span>模型名</span>
+                  <input id="encode-model" list="all-models-list" type="text" placeholder="simvq-v45-3x" />
+                </label>
+                <div class="grid three compact-grid">
+                  <label>
+                    <span>Batch Size</span>
+                    <input id="encode-batch-size" type="number" value="128" min="1" />
+                  </label>
+                  <label>
+                    <span>Chunk Size</span>
+                    <input id="encode-chunk-size" type="number" value="12288" min="1" />
+                  </label>
+                  <label>
+                    <span>Hop Size</span>
+                    <input id="encode-hop-size" type="number" value="11688" min="1" />
+                  </label>
+                </div>
+                <label>
+                  <span>短块策略</span>
+                  <select id="encode-short-policy">
+                    <option value="normalize_then_zero_pad">normalize_then_zero_pad</option>
+                  </select>
+                </label>
+                <label class="checkbox">
+                  <input id="encode-overwrite" type="checkbox" />
+                  <span>允许覆盖输出文件</span>
+                </label>
+                <div class="button-row">
+                  <button type="submit">开始 Encode</button>
+                </div>
+              </form>
+              <div id="encode-message" class="message"></div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-header">
+                <h3>说明</h3>
+              </div>
+              <ul class="tips">
+                <li>GUI 直接复用已有 Python CLI，不重复实现推理逻辑。</li>
+                <li>默认输出仍然是 `.vq.tar.gz`。</li>
+                <li>任务启动后可到“任务 / 历史”页面看日志和结果。</li>
+              </ul>
+            </article>
+          </div>
+        </section>
+
+        <section id="view-decode" class="view">
+          <div class="grid two">
+            <article class="panel">
+              <div class="panel-header">
+                <h3>Decode 任务</h3>
+              </div>
+              <form id="decode-form" class="form">
+                <label>
+                  <span>输入 Bundle</span>
+                  <div class="input-row">
+                    <input id="decode-input" type="text" placeholder="/path/to/input.vq.tar.gz" />
+                    <button type="button" id="decode-input-browse" class="ghost-button">选择文件</button>
+                  </div>
+                </label>
+                <label>
+                  <span>输出 POD5</span>
+                  <div class="input-row">
+                    <input id="decode-output" type="text" placeholder="/path/to/output.pod5" />
+                    <button type="button" id="decode-output-browse" class="ghost-button">保存到</button>
+                  </div>
+                </label>
+                <label>
+                  <span>模型名</span>
+                  <input id="decode-model" list="all-models-list" type="text" placeholder="simvq-v45-3x" />
+                </label>
+                <label>
+                  <span>Batch Size</span>
+                  <input id="decode-batch-size" type="number" value="128" min="1" />
+                </label>
+                <label class="checkbox">
+                  <input id="decode-overwrite" type="checkbox" />
+                  <span>允许覆盖输出文件</span>
+                </label>
+                <div class="button-row">
+                  <button type="submit">开始 Decode</button>
+                </div>
+              </form>
+              <div id="decode-message" class="message"></div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-header">
+                <h3>说明</h3>
+              </div>
+              <ul class="tips">
+                <li>Decode 会校验 bundle 中记录的模型名。</li>
+                <li>推荐先用 Inspect 看清 manifest，再执行重建。</li>
+                <li>日志、summary 和输出路径都会进入任务历史。</li>
+              </ul>
+            </article>
+          </div>
+        </section>
+
+        <section id="view-inspect" class="view">
+          <div class="grid two">
+            <article class="panel">
+              <div class="panel-header">
+                <h3>Inspect Bundle</h3>
+              </div>
+              <form id="inspect-form" class="form">
+                <label>
+                  <span>Bundle 路径</span>
+                  <div class="input-row">
+                    <input id="inspect-input" type="text" placeholder="/path/to/input.vq.tar.gz" />
+                    <button type="button" id="inspect-input-browse" class="ghost-button">选择文件</button>
+                  </div>
+                </label>
+                <div class="button-row">
+                  <button type="submit">Inspect</button>
+                </div>
+              </form>
+              <div id="inspect-message" class="message"></div>
+              <div id="inspect-summary" class="inspect-summary empty">暂无结果。</div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-header">
+                <h3>Manifest JSON</h3>
+              </div>
+              <pre id="inspect-json" class="json-output"></pre>
+            </article>
+          </div>
+        </section>
+
+        <section id="view-tasks" class="view">
+          <div class="grid two">
+            <article class="panel">
+              <div class="panel-header inline">
+                <h3>任务列表</h3>
+                <button id="tasks-refresh-button" type="button" class="ghost-button">刷新任务</button>
+              </div>
+              <div id="tasks-list" class="card-list empty">暂无任务。</div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-header">
+                <h3>任务详情</h3>
+              </div>
+              <div id="task-detail-summary" class="task-detail empty">选择左侧任务查看详情。</div>
+              <pre id="task-detail-json" class="json-output"></pre>
+              <pre id="task-detail-log" class="log-output"></pre>
+            </article>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

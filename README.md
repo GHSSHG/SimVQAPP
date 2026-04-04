@@ -59,6 +59,41 @@ Decode a bundle back to POD5:
 simvq decode input.vq.tar.gz --model simvq-v45-stub --output reconstructed.pod5
 ```
 
+## Desktop GUI
+
+An Electron desktop shell now sits on top of the existing Python CLI.
+
+Install desktop dependencies:
+
+```bash
+npm install
+```
+
+Run the desktop app in development mode:
+
+```bash
+npm run desktop:dev
+```
+
+Run the desktop smoke test against the local CLI and the existing sample bundle:
+
+```bash
+npm run desktop:smoke
+```
+
+Build an unpacked desktop app:
+
+```bash
+npm run desktop:pack
+```
+
+Notes for the desktop app:
+
+- It still depends on an external Python environment with the SimVQ runtime dependencies installed.
+- The GUI calls `python -m simvq.cli.main` and uses `PYTHONPATH=<repo>/src`.
+- If you run a packaged app, make sure the Python executable is valid in the Settings page.
+- Current GUI pages include Doctor, Models, Encode, Decode, Inspect, and Tasks / History.
+
 ## Notes
 
 - This repository is inference-only by design.

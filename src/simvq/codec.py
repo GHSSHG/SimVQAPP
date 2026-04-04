@@ -290,6 +290,7 @@ class SimVQCodec:
                 for record in read_records:
                     chunk_offset = int(record["chunk_offset"])
                     chunk_count = int(record["chunk_count"])
+                    total_length = int(record.get("trimmed_length", record.get("raw_length", 0)))
                     template_dict = dict(record["template"])
                     from .pod5_templates import Pod5ReadTemplate
 

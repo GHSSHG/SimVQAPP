@@ -1,5 +1,30 @@
-checkpoint*
-outputs
-samples
-tests
+# macOS
+.DS_Store
 
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+.venv/
+venv/
+env/
+
+# Packaging
+build/
+dist/
+*.egg-info/
+
+# Node / Electron
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# SimVQ generated artifacts
+outputs/
+checkpoint_*/
+samples/*.pod5
