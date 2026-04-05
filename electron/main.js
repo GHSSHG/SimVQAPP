@@ -2,6 +2,7 @@ const path = require("path");
 const { app, BrowserWindow, Menu, dialog, ipcMain, shell } = require("electron");
 
 const { createStores, normalizeSettings } = require("./backend/store");
+const { ensureBundledDefaultModel, maybeRemoveStubModel } = require("./backend/default-models");
 const { SimVQCliBackend } = require("./backend/simvq-cli");
 const { TaskManager } = require("./backend/task-manager");
 
@@ -143,6 +144,9 @@ function registerIpcHandlers() {
 async function bootstrap() {
   Menu.setApplicationMenu(null);
   stores = createStores(app);
+  stores.settings.set(stores.settings.get());
+  maybeRemoveStubModel();
+  ensureBundledDefaultModel({ repoRoot: stores.settings.get().repoRoot });
   backend = new SimVQCliBackend(() => stores.settings.get());
   taskManager = new TaskManager({
     backend,

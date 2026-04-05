@@ -31,7 +31,7 @@ const TRANSLATIONS = {
     "view.home.title": "环境与系统设置",
     "view.home.subtitle": "配置环境路径、模型目录地址，并查看当前系统依赖是否齐备。",
     "settings.panel.title": "环境与系统设置",
-    "settings.panel.subtitle": "配置运行环境与模型目录地址，之后即可在桌面端稳定执行任务。",
+    "settings.panel.subtitle": "配置运行环境与源码目录，并查看当前系统依赖状态。",
     "settings.language.label": "语言",
     "settings.language.option.zh-CN": "简体中文",
     "settings.language.option.en": "English",
@@ -42,9 +42,11 @@ const TRANSLATIONS = {
     "settings.repo_root.browse": "选择目录",
     "settings.catalog_url.label": "远程模型目录 URL（可留空）",
     "settings.catalog_url.placeholder": "https://example.com/catalog.json",
-    "settings.model_repo.label": "模型源码仓库（真实模型可选）",
+    "settings.model_repo.label": "SimVQGAN 源码目录（不是 checkpoint 目录）",
     "settings.model_repo.placeholder": "/path/to/SimVQGAN",
     "settings.model_repo.browse": "选择目录",
+    "settings.model_repo.note": "仅用于真实模型运行。不要选择 `checkpoint_1200000` 这类权重目录；这里应指向包含 `codec/models.py` 的 SimVQGAN 源码目录。",
+    "settings.model_repo.note_checkpoint": "当前路径看起来像 checkpoint 权重目录，不是源码目录。请改为选择包含 `codec/models.py` 的 SimVQGAN 源码目录。",
     "settings.save": "保存设置",
     "settings.run_doctor": "重新检查环境",
     "doctor.panel.title": "系统自检",
@@ -55,11 +57,13 @@ const TRANSLATIONS = {
     "models.remote.placeholder": "沿用系统设置中的 catalog URL",
     "models.remote.refresh": "刷新远程",
     "models.local.title": "本地已安装模型",
-    "models.local.subtitle": "这些模型可直接出现在压缩与重建页面的下拉选择中。",
+    "models.local.subtitle": "这里登记的是本地模型与 checkpoint，Encode / Decode 下拉框会直接读取这里。",
     "models.local.refresh": "刷新本地",
     "models.detail.title": "模型详情",
-    "models.detail.subtitle": "优先展示版本、运行参数与本地路径，原始 payload 默认折叠。",
+    "models.detail.subtitle": "模型出现在列表中代表已经登记；是否能真实运行，还要看系统设置里的源码目录是否有效。",
     "models.detail.raw": "查看原始模型 JSON",
+    "models.workflow.title": "模型管理页的作用",
+    "models.workflow.body": "这里负责登记本地模型、checkpoint 与元数据，并为 Encode / Decode 提供模型下拉项。模型显示为“已安装”不等于已经具备真实运行所需的源码目录。",
     "models.register.toggle.title": "注册本地模型",
     "models.register.toggle.subtitle": "只有在已经准备好 checkpoint 时再展开",
     "register.name.label": "模型名",
@@ -207,12 +211,15 @@ const TRANSLATIONS = {
     "models.source_repo": "源仓库",
     "models.source_repo.missing": "内置或未提供",
     "models.runtime_mode": "运行模式",
-    "models.status": "可用性",
-    "models.status.ready": "就绪",
+    "models.installation": "安装状态",
+    "models.installation.done": "已安装",
+    "models.status": "运行状态",
+    "models.status.ready": "可运行",
     "models.status.not_ready": "未就绪",
     "models.resolved_source_repo": "已解析源码仓库",
     "models.configured_source_repo": "配置的源码仓库",
     "models.ready_issues": "阻塞问题",
+    "models.runtime_help.not_ready": "模型已经登记到本地，但要运行真实压缩或重建，还需要在系统设置中提供有效的 SimVQGAN 源码目录。",
     "runtime.chunk_size": "Chunk Size",
     "runtime.tokens_per_chunk": "每块 Tokens",
     "runtime.codebook_size": "码本大小",
@@ -330,7 +337,7 @@ const TRANSLATIONS = {
     "view.home.title": "Environment & System Settings",
     "view.home.subtitle": "Configure runtime paths, model sources, and dependency health.",
     "settings.panel.title": "Environment & System Settings",
-    "settings.panel.subtitle": "Configure runtime paths and model sources so the desktop app can run tasks reliably.",
+    "settings.panel.subtitle": "Configure runtime paths and source directories, then review system dependency status.",
     "settings.language.label": "Language",
     "settings.language.option.zh-CN": "Simplified Chinese",
     "settings.language.option.en": "English",
@@ -341,9 +348,11 @@ const TRANSLATIONS = {
     "settings.repo_root.browse": "Browse",
     "settings.catalog_url.label": "Remote Model Catalog URL (optional)",
     "settings.catalog_url.placeholder": "https://example.com/catalog.json",
-    "settings.model_repo.label": "Model Source Repo (optional for real models)",
+    "settings.model_repo.label": "SimVQGAN Source Directory (not a checkpoint directory)",
     "settings.model_repo.placeholder": "/path/to/SimVQGAN",
     "settings.model_repo.browse": "Browse",
+    "settings.model_repo.note": "Used only for real-model execution. Do not choose a weight directory such as `checkpoint_1200000`; this field should point to a SimVQGAN source directory that contains `codec/models.py`.",
+    "settings.model_repo.note_checkpoint": "This path looks like a checkpoint weight directory, not a source directory. Choose a SimVQGAN source directory that contains `codec/models.py` instead.",
     "settings.save": "Save Settings",
     "settings.run_doctor": "Run Health Check",
     "doctor.panel.title": "System Health",
@@ -354,11 +363,13 @@ const TRANSLATIONS = {
     "models.remote.placeholder": "Use the catalog URL from system settings",
     "models.remote.refresh": "Refresh Remote",
     "models.local.title": "Installed Local Models",
-    "models.local.subtitle": "These models are available directly in Encode and Decode dropdowns.",
+    "models.local.subtitle": "This page registers local models and checkpoints, and the Encode / Decode dropdowns read directly from it.",
     "models.local.refresh": "Refresh Local",
     "models.detail.title": "Model Details",
-    "models.detail.subtitle": "Show version, runtime parameters, and local paths first. Keep raw payload collapsed.",
+    "models.detail.subtitle": "A model appearing in the list means it has been registered. Whether it can actually run still depends on a valid source directory in System Settings.",
     "models.detail.raw": "View Raw Model JSON",
+    "models.workflow.title": "What Model Manager Does",
+    "models.workflow.body": "This page registers local models, checkpoints, and metadata, and supplies the model dropdowns in Encode / Decode. A model shown as installed is not the same as having everything needed to run real inference.",
     "models.register.toggle.title": "Register Local Model",
     "models.register.toggle.subtitle": "Expand only after your checkpoint is ready",
     "register.name.label": "Model Name",
@@ -506,12 +517,15 @@ const TRANSLATIONS = {
     "models.source_repo": "Source Repo",
     "models.source_repo.missing": "built-in or missing",
     "models.runtime_mode": "Runtime Mode",
-    "models.status": "Readiness",
-    "models.status.ready": "Ready",
+    "models.installation": "Installation",
+    "models.installation.done": "Installed",
+    "models.status": "Run Status",
+    "models.status.ready": "Ready to Run",
     "models.status.not_ready": "Not Ready",
     "models.resolved_source_repo": "Resolved Source Repo",
     "models.configured_source_repo": "Configured Source Repo",
     "models.ready_issues": "Blocking Issues",
+    "models.runtime_help.not_ready": "This model has been registered locally, but real encode/decode still requires a valid SimVQGAN source directory in System Settings.",
     "runtime.chunk_size": "Chunk Size",
     "runtime.tokens_per_chunk": "Tokens per Chunk",
     "runtime.codebook_size": "Codebook Size",
@@ -640,11 +654,6 @@ const TASK_KIND_KEYS = {
   decode: "task.kind.decode",
 };
 
-const TASK_KIND_ICONS = {
-  encode: "压",
-  decode: "建",
-};
-
 const DOCTOR_CHECK_LABELS = {
   numpy: "NumPy",
   pod5: "POD5",
@@ -663,7 +672,6 @@ const DOCTOR_FIX_HINT_KEYS = {
 
 const FILE_PICKER_CONFIG = {
   "encode-input": {
-    icon: "压",
     kickerKey: "picker.encode_input.kicker",
     emptyTitleKey: "picker.encode_input.empty_title",
     emptyDescriptionKey: "picker.encode_input.empty_description",
@@ -673,7 +681,6 @@ const FILE_PICKER_CONFIG = {
     messageId: "encode-message",
   },
   "encode-output": {
-    icon: "出",
     kickerKey: "picker.encode_output.kicker",
     emptyTitleKey: "picker.encode_output.empty_title",
     emptyDescriptionKey: "picker.encode_output.empty_description",
@@ -681,7 +688,6 @@ const FILE_PICKER_CONFIG = {
     allowDrop: false,
   },
   "decode-input": {
-    icon: "建",
     kickerKey: "picker.decode_input.kicker",
     emptyTitleKey: "picker.decode_input.empty_title",
     emptyDescriptionKey: "picker.decode_input.empty_description",
@@ -691,7 +697,6 @@ const FILE_PICKER_CONFIG = {
     messageId: "decode-message",
   },
   "decode-output": {
-    icon: "出",
     kickerKey: "picker.decode_output.kicker",
     emptyTitleKey: "picker.decode_output.empty_title",
     emptyDescriptionKey: "picker.decode_output.empty_description",
@@ -699,7 +704,6 @@ const FILE_PICKER_CONFIG = {
     allowDrop: false,
   },
   "inspect-input": {
-    icon: "查",
     kickerKey: "picker.inspect_input.kicker",
     emptyTitleKey: "picker.inspect_input.empty_title",
     emptyDescriptionKey: "picker.inspect_input.empty_description",
@@ -763,6 +767,8 @@ const STATIC_TEXT_BINDINGS = [
   ["#view-models .layout-split .panel:nth-child(2) h3", "models.local.title"],
   ["#view-models .layout-split .panel:nth-child(2) .panel-subtle", "models.local.subtitle"],
   ["#models-refresh-local", "models.local.refresh"],
+  ["#models-workflow-note-title", "models.workflow.title"],
+  ["#models-workflow-note-body", "models.workflow.body"],
   ["#view-models .layout-single .panel-data h3", "models.detail.title"],
   ["#view-models .layout-single .panel-data .panel-subtle", "models.detail.subtitle"],
   ['#view-models .layout-single .panel-data .debug-section summary', "models.detail.raw"],
@@ -1055,6 +1061,23 @@ function pathLeaf(value, fallback = "") {
   return parts.length ? parts[parts.length - 1] : text;
 }
 
+function looksLikeCheckpointDirectory(value) {
+  const leaf = pathLeaf(value || "").toLowerCase();
+  return /^checkpoint(?:[_-]?\d+)?$/i.test(leaf) || /^checkpoint_\d+$/i.test(leaf);
+}
+
+function renderModelSourceRepoNote() {
+  const note = $("#settings-model-source-repo-note");
+  const input = $("#settings-model-source-repo");
+  if (!note || !input) {
+    return;
+  }
+  const value = String(input.value || "").trim();
+  const checkpointLike = looksLikeCheckpointDirectory(value);
+  note.textContent = t(checkpointLike ? "settings.model_repo.note_checkpoint" : "settings.model_repo.note");
+  note.className = `field-hint${checkpointLike ? " warning" : ""}`;
+}
+
 function emptyState(icon, title, description) {
   return `
     <div class="empty-state">
@@ -1225,15 +1248,11 @@ function renderFilePicker(fieldId) {
   card.dataset.hasValue = hasValue ? "true" : "false";
   card.title = hasValue ? value : "";
 
-  const icon = card.querySelector("[data-picker-icon]");
   const kicker = card.querySelector("[data-picker-kicker]");
   const title = card.querySelector("[data-picker-title]");
   const description = card.querySelector("[data-picker-description]");
   const clearButton = card.querySelector(`[data-picker-clear="${fieldId}"]`);
 
-  if (icon) {
-    icon.textContent = config.icon;
-  }
   if (kicker) {
     kicker.textContent = t(config.kickerKey);
   }
@@ -1316,6 +1335,7 @@ function renderSettingsForm() {
     $("#register-source-repo").value = state.settings.modelSourceRepo;
   }
   applyStaticTranslations();
+  renderModelSourceRepoNote();
   updateHeader(state.activeView);
 }
 
@@ -1378,7 +1398,6 @@ function renderRemoteModels() {
       (item) => `
         <div class="model-card">
           <div class="model-card-main">
-            <span class="model-kind-icon">远</span>
             <div class="card-copy">
               <div class="card-title-row">
                 <div class="card-title">${escapeHtml(item.name)}</div>
@@ -1409,7 +1428,6 @@ function renderLocalModels() {
       (item) => `
         <div class="model-card">
           <div class="model-card-main">
-            <span class="model-kind-icon">本</span>
             <div class="card-copy">
               <div class="card-title-row">
                 <div class="card-title">${escapeHtml(item.name)}</div>
@@ -1449,8 +1467,9 @@ function renderModelDetail() {
         { label: t("register.name.label"), value: payload.name },
         { label: t("generic.version"), value: payload.version },
         { label: t("generic.variant"), value: payload.variant },
-        { label: t("models.runtime_mode"), value: payload.mode },
-      ])}
+        { label: t("models.installation"), value: t("models.installation.done") },
+        { label: t("models.status"), value: runtime.ready ? t("models.status.ready") : t("models.status.not_ready") },
+      ], "metric-grid-wide")}
       <div class="detail-columns">
         <section class="detail-block">
           <h4>${escapeHtml(t("models.cache"))}</h4>
@@ -1466,13 +1485,10 @@ function renderModelDetail() {
           <h4>${escapeHtml(t("models.runtime"))}</h4>
           <div class="info-rows">
             ${renderInfoRows([
+              { label: t("models.runtime_mode"), value: payload.mode },
               { label: t("runtime.chunk_size"), value: runtime.chunk_size },
               { label: t("runtime.tokens_per_chunk"), value: runtime.tokens_per_chunk },
               { label: t("runtime.codebook_size"), value: runtime.codebook_size },
-              {
-                label: t("models.status"),
-                value: runtime.ready ? t("models.status.ready") : t("models.status.not_ready"),
-              },
               {
                 label: t("models.resolved_source_repo"),
                 value: runtime.resolved_source_repo_path || runtime.source_repo_path || t("models.source_repo.missing"),
@@ -1496,6 +1512,11 @@ function renderModelDetail() {
                 </div>
               `
               : ""
+          }
+          ${
+            runtime.ready
+              ? ""
+              : `<div class="inline-note"><p>${escapeHtml(t("models.runtime_help.not_ready"))}</p></div>`
           }
         </section>
       </div>
@@ -1581,10 +1602,6 @@ function taskKindLabel(kind) {
   return TASK_KIND_KEYS[kind] ? t(TASK_KIND_KEYS[kind]) : kind || t("generic.unknown");
 }
 
-function taskKindIcon(kind) {
-  return TASK_KIND_ICONS[kind] || "任";
-}
-
 function resolveTaskOutput(task) {
   const result = task.result || {};
   return task.outputPath || result.output_path || result.output_bundle || result.output_pod5 || "";
@@ -1638,7 +1655,6 @@ function renderTasks() {
         return `
           <div class="task-card ${task.id === state.selectedTaskId ? "selected" : ""}">
             <button type="button" class="task-card-main" data-task-action="select" data-task-id="${escapeHtml(task.id)}">
-              <span class="task-kind-icon">${escapeHtml(taskKindIcon(task.kind))}</span>
               <div class="card-copy">
                 <div class="card-title-row">
                   <div class="card-title">${escapeHtml(taskFileName(task))}</div>
@@ -1931,6 +1947,7 @@ async function bindBrowseButtons() {
     const value = await choosePath({ kind: "openDirectory", title: t("dialog.settings.model_repo") });
     if (value) {
       $("#settings-model-source-repo").value = value;
+      renderModelSourceRepoNote();
     }
   });
 
@@ -2129,6 +2146,11 @@ function bindActions() {
     renderInspect();
     renderTasks();
     renderAllFilePickers();
+    renderModelSourceRepoNote();
+  });
+
+  $("#settings-model-source-repo").addEventListener("input", () => {
+    renderModelSourceRepoNote();
   });
 
   $("#settings-form").addEventListener("submit", saveSettings);

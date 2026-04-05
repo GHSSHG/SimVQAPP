@@ -24,14 +24,28 @@
           <section class="nav-group">
             <div class="nav-group-label">核心工作流</div>
             <button class="nav-button active" data-view-target="encode">
-              <span class="nav-icon">压</span>
+              <span class="nav-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M6 7h12v10H6z" />
+                  <path d="M9 4v3" />
+                  <path d="M15 4v3" />
+                  <path d="M9 17v3" />
+                  <path d="M15 17v3" />
+                </svg>
+              </span>
               <span class="nav-copy">
                 <strong>压缩 Encode</strong>
                 <small>拖入 POD5 并启动高保真压缩</small>
               </span>
             </button>
             <button class="nav-button" data-view-target="decode">
-              <span class="nav-icon">建</span>
+              <span class="nav-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M6 10.5 12 5l6 5.5V18H6z" />
+                  <path d="M9 10h6" />
+                  <path d="M12 5v8" />
+                </svg>
+              </span>
               <span class="nav-copy">
                 <strong>重建 Decode</strong>
                 <small>从 bundle 还原可用的 POD5 文件</small>
@@ -44,14 +58,24 @@
           <section class="nav-group">
             <div class="nav-group-label">辅助分析</div>
             <button class="nav-button" data-view-target="tasks">
-              <span class="nav-icon">史</span>
+              <span class="nav-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="7" />
+                  <path d="M12 8v4l2.5 2.5" />
+                </svg>
+              </span>
               <span class="nav-copy">
                 <strong>任务历史</strong>
                 <small>查看进度、结果与日志</small>
               </span>
             </button>
             <button class="nav-button" data-view-target="inspect">
-              <span class="nav-icon">查</span>
+              <span class="nav-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <circle cx="11" cy="11" r="5.5" />
+                  <path d="m15.5 15.5 4 4" />
+                </svg>
+              </span>
               <span class="nav-copy">
                 <strong>文件探查</strong>
                 <small>快速读取 bundle 的核心信息</small>
@@ -64,14 +88,32 @@
           <section class="nav-group nav-group-bottom">
             <div class="nav-group-label">全局设置</div>
             <button class="nav-button" data-view-target="models">
-              <span class="nav-icon">模</span>
+              <span class="nav-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M12 4 6 7v6l6 3 6-3V7z" />
+                  <path d="M6 7l6 3 6-3" />
+                  <path d="M12 10v6" />
+                </svg>
+              </span>
               <span class="nav-copy">
                 <strong>模型管理</strong>
                 <small>查看、拉取和维护本地模型</small>
               </span>
             </button>
             <button class="nav-button" data-view-target="home">
-              <span class="nav-icon">设</span>
+              <span class="nav-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="2.5" />
+                  <path d="M12 4.5v2.2" />
+                  <path d="M12 17.3v2.2" />
+                  <path d="m18.36 7.64-1.56 1.56" />
+                  <path d="m7.2 18.8-1.56 1.56" />
+                  <path d="M19.5 12h-2.2" />
+                  <path d="M6.7 12H4.5" />
+                  <path d="m18.36 16.36-1.56-1.56" />
+                  <path d="M7.2 5.2 5.64 3.64" />
+                </svg>
+              </span>
               <span class="nav-copy">
                 <strong>系统设置</strong>
                 <small>配置环境路径并运行自检</small>
@@ -97,7 +139,7 @@
             <article class="panel">
               <div class="panel-header">
                 <h3>环境与系统设置</h3>
-                <p class="panel-subtle">配置运行环境与模型目录地址，之后即可在桌面端稳定执行任务。</p>
+                <p class="panel-subtle">配置运行环境与源码目录，并查看当前系统依赖状态。</p>
               </div>
               <form id="settings-form" class="form">
                 <label>
@@ -123,11 +165,12 @@
                   <input id="settings-catalog-url" type="text" placeholder="https://example.com/catalog.json" />
                 </label>
                 <label>
-                  <span>模型源码仓库（真实模型可选）</span>
+                  <span>SimVQGAN 源码目录（不是 checkpoint 目录）</span>
                   <div class="input-row">
                     <input id="settings-model-source-repo" type="text" placeholder="/path/to/SimVQGAN" />
                     <button type="button" id="settings-model-source-repo-browse" class="ghost-button">选择目录</button>
                   </div>
+                  <p id="settings-model-source-repo-note" class="field-hint">仅用于真实模型运行。不要选择 `checkpoint_1200000` 这类权重目录；这里应指向包含 `codec/models.py` 的 SimVQGAN 源码目录。</p>
                 </label>
                 <div class="button-row">
                   <button type="submit">保存设置</button>
@@ -171,11 +214,15 @@
               <div class="panel-header inline">
                 <div>
                   <h3>本地已安装模型</h3>
-                  <p class="panel-subtle">这些模型可直接出现在压缩与重建页面的下拉选择中。</p>
+                  <p class="panel-subtle">这里登记的是本地模型与 checkpoint，Encode / Decode 下拉框会直接读取这里。</p>
                 </div>
                 <button id="models-refresh-local" type="button" class="ghost-button">刷新本地</button>
               </div>
               <div id="local-models-list" class="card-list empty-state-host">暂无本地模型。</div>
+              <div class="inline-note">
+                <strong id="models-workflow-note-title">模型管理页的作用</strong>
+                <p id="models-workflow-note-body">这里负责登记本地模型、checkpoint 与元数据，并为 Encode / Decode 提供模型下拉项。模型显示为“已安装”不等于已经具备真实运行所需的源码目录。</p>
+              </div>
             </article>
           </div>
 
@@ -183,7 +230,7 @@
             <article class="panel panel-data">
               <div class="panel-header">
                 <h3>模型详情</h3>
-                <p class="panel-subtle">优先展示版本、运行参数与本地路径，原始 payload 默认折叠。</p>
+                <p class="panel-subtle">模型出现在列表中代表已经登记；是否能真实运行，还要看系统设置里的源码目录是否有效。</p>
               </div>
               <div id="model-detail-summary" class="detail-summary empty-state-host"></div>
               <details class="debug-section">
@@ -270,7 +317,6 @@
                   >
                     <input id="encode-input" type="hidden" />
                     <div class="picker-leading">
-                      <span class="picker-icon" data-picker-icon>压</span>
                       <div class="picker-copy">
                         <span class="picker-kicker" data-picker-kicker>输入文件</span>
                         <strong data-picker-title>点击选择文件，或将 .pod5 文件拖拽至此</strong>
@@ -294,7 +340,6 @@
                   >
                     <input id="encode-output" type="hidden" />
                     <div class="picker-leading">
-                      <span class="picker-icon" data-picker-icon>出</span>
                       <div class="picker-copy">
                         <span class="picker-kicker" data-picker-kicker>输出位置</span>
                         <strong data-picker-title>选择压缩结果的保存位置</strong>
@@ -382,7 +427,6 @@
                   >
                     <input id="decode-input" type="hidden" />
                     <div class="picker-leading">
-                      <span class="picker-icon" data-picker-icon>建</span>
                       <div class="picker-copy">
                         <span class="picker-kicker" data-picker-kicker>输入文件</span>
                         <strong data-picker-title>点击选择文件，或将 bundle 拖拽至此</strong>
@@ -406,7 +450,6 @@
                   >
                     <input id="decode-output" type="hidden" />
                     <div class="picker-leading">
-                      <span class="picker-icon" data-picker-icon>出</span>
                       <div class="picker-copy">
                         <span class="picker-kicker" data-picker-kicker>输出位置</span>
                         <strong data-picker-title>选择重建结果的保存位置</strong>
@@ -478,7 +521,6 @@
                   >
                     <input id="inspect-input" type="hidden" />
                     <div class="picker-leading">
-                      <span class="picker-icon" data-picker-icon>查</span>
                       <div class="picker-copy">
                         <span class="picker-kicker" data-picker-kicker>待探查文件</span>
                         <strong data-picker-title>点击选择文件，或将 bundle 拖拽至此</strong>
