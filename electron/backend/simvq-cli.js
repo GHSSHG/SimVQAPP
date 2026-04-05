@@ -126,17 +126,11 @@ class SimVQCliBackend {
   spawnCommand(args, options = {}) {
     const settings = this.resolveSettings(options.settings);
     const commandArgs = ["-m", "simvq.cli.main", ...args];
-    const extraEnv = {
-      ...options.env,
-    };
-    if (settings.modelSourceRepo) {
-      extraEnv.SIMVQ_MODEL_SOURCE_REPO = String(settings.modelSourceRepo);
-    }
     const child = spawn(settings.pythonExecutable, commandArgs, {
       cwd: options.cwd || settings.repoRoot,
       env: {
         ...process.env,
-        ...extraEnv,
+        ...options.env,
         PYTHONPATH: composePythonPath(settings.repoRoot),
       },
       stdio: ["ignore", "pipe", "pipe"],
@@ -236,8 +230,6 @@ class SimVQCliBackend {
       ensureString(payload.name, "name"),
       "--checkpoint",
       ensureString(payload.checkpoint, "checkpoint"),
-      "--source-repo",
-      ensureString(payload.sourceRepo, "sourceRepo"),
       "--config-json",
       ensureString(payload.configJson, "configJson"),
       "--variant",

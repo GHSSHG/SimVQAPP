@@ -31,7 +31,7 @@ const TRANSLATIONS = {
     "view.home.title": "环境与系统设置",
     "view.home.subtitle": "配置环境路径、模型目录地址，并查看当前系统依赖是否齐备。",
     "settings.panel.title": "环境与系统设置",
-    "settings.panel.subtitle": "配置运行环境与源码目录，并查看当前系统依赖状态。",
+    "settings.panel.subtitle": "配置运行环境与模型目录，并查看当前系统依赖状态。",
     "settings.language.label": "语言",
     "settings.language.option.zh-CN": "简体中文",
     "settings.language.option.en": "English",
@@ -42,11 +42,6 @@ const TRANSLATIONS = {
     "settings.repo_root.browse": "选择目录",
     "settings.catalog_url.label": "远程模型目录 URL（可留空）",
     "settings.catalog_url.placeholder": "https://example.com/catalog.json",
-    "settings.model_repo.label": "SimVQGAN 源码目录（不是 checkpoint 目录）",
-    "settings.model_repo.placeholder": "/path/to/SimVQGAN",
-    "settings.model_repo.browse": "选择目录",
-    "settings.model_repo.note": "仅用于真实模型运行。不要选择 `checkpoint_1200000` 这类权重目录；这里应指向包含 `codec/models.py` 的 SimVQGAN 源码目录。",
-    "settings.model_repo.note_checkpoint": "当前路径看起来像 checkpoint 权重目录，不是源码目录。请改为选择包含 `codec/models.py` 的 SimVQGAN 源码目录。",
     "settings.save": "保存设置",
     "settings.run_doctor": "重新检查环境",
     "doctor.panel.title": "系统自检",
@@ -60,10 +55,10 @@ const TRANSLATIONS = {
     "models.local.subtitle": "这里登记的是本地模型与 checkpoint，Encode / Decode 下拉框会直接读取这里。",
     "models.local.refresh": "刷新本地",
     "models.detail.title": "模型详情",
-    "models.detail.subtitle": "模型出现在列表中代表已经登记；是否能真实运行，还要看系统设置里的源码目录是否有效。",
+    "models.detail.subtitle": "模型出现在列表中代表已经登记；是否能真实运行，主要取决于本地 checkpoint 与运行环境是否完整。",
     "models.detail.raw": "查看原始模型 JSON",
     "models.workflow.title": "模型管理页的作用",
-    "models.workflow.body": "这里负责登记本地模型、checkpoint 与元数据，并为 Encode / Decode 提供模型下拉项。模型显示为“已安装”不等于已经具备真实运行所需的源码目录。",
+    "models.workflow.body": "这里负责登记本地模型、checkpoint 与元数据，并为 Encode / Decode 提供模型下拉项。",
     "models.register.toggle.title": "注册本地模型",
     "models.register.toggle.subtitle": "只有在已经准备好 checkpoint 时再展开",
     "register.name.label": "模型名",
@@ -71,9 +66,6 @@ const TRANSLATIONS = {
     "register.checkpoint.label": "Checkpoint 目录",
     "register.checkpoint.placeholder": "/path/to/checkpoint_1200000",
     "register.checkpoint.browse": "选择目录",
-    "register.source_repo.label": "来源仓库",
-    "register.source_repo.placeholder": "/path/to/SimVQGAN",
-    "register.source_repo.browse": "选择目录",
     "register.config_json.label": "配置 JSON",
     "register.config_json.placeholder": "/path/to/train.json",
     "register.config_json.browse": "选择文件",
@@ -208,18 +200,17 @@ const TRANSLATIONS = {
     "models.config_path": "配置文件",
     "models.checkpoint": "Checkpoint",
     "models.checkpoint.missing": "未登记",
-    "models.source_repo": "源仓库",
-    "models.source_repo.missing": "内置或未提供",
     "models.runtime_mode": "运行模式",
+    "models.runtime_backend": "运行后端",
+    "models.backend.builtin": "内置 SimVQ",
+    "models.backend.stub": "Stub",
     "models.installation": "安装状态",
     "models.installation.done": "已安装",
     "models.status": "运行状态",
     "models.status.ready": "可运行",
     "models.status.not_ready": "未就绪",
-    "models.resolved_source_repo": "已解析源码仓库",
-    "models.configured_source_repo": "配置的源码仓库",
     "models.ready_issues": "阻塞问题",
-    "models.runtime_help.not_ready": "模型已经登记到本地，但要运行真实压缩或重建，还需要在系统设置中提供有效的 SimVQGAN 源码目录。",
+    "models.runtime_help.not_ready": "模型已经登记到本地，但当前缺少 checkpoint 或运行依赖，无法执行真实压缩或重建。",
     "runtime.chunk_size": "Chunk Size",
     "runtime.tokens_per_chunk": "每块 Tokens",
     "runtime.codebook_size": "码本大小",
@@ -278,11 +269,8 @@ const TRANSLATIONS = {
     "message.inspect.done": "探查完成。",
     "message.preflight.model_missing": "请选择一个本地模型。",
     "message.preflight.model_not_ready": "当前模型还不能运行：{issue}",
-    "message.preflight.missing_source_repo": "当前模型依赖外部 SimVQGAN 源码仓库。请先在系统设置中配置“模型源码仓库”，或重新注册该模型。",
     "dialog.settings.repo_root": "选择 SimVQ 仓库根目录",
-    "dialog.settings.model_repo": "选择 SimVQGAN 源码仓库",
     "dialog.register.checkpoint": "选择 checkpoint 目录",
-    "dialog.register.source_repo": "选择原始 SimVQGAN 仓库",
     "dialog.register.config_json": "选择配置 JSON",
     "dialog.encode.input": "选择 POD5",
     "dialog.encode.output": "保存输出 Bundle",
@@ -294,11 +282,6 @@ const TRANSLATIONS = {
     "dialog.filter.bundle": "SimVQ Bundle",
     "error.drag.read_path": "无法读取拖入文件的真实路径，请改用“选择文件”。",
     "error.drag.invalid_type": "文件类型不符合要求，请重新选择。",
-    "error.model_source_repo_missing": "当前模型依赖的外部源码仓库不存在：{path}。请在系统设置中配置“模型源码仓库”，或重新注册该模型。",
-    "error.model_source_repo_required": "真实模型需要一个兼容的 SimVQGAN 源码仓库。请在系统设置中配置“模型源码仓库”。",
-    "error.configured_source_repo_missing": "模型配置里的源码仓库不存在：{path}。请在系统设置中配置“模型源码仓库”，或重新注册该模型。",
-    "error.configured_source_repo_invalid": "模型配置里的源码仓库缺少 `codec.models`：{path}。请改用兼容的 SimVQGAN 仓库。",
-    "error.model_builder_missing": "源码仓库中缺少 `codec.models.build_audio_model`：{path}。请改用兼容的 SimVQGAN 仓库。",
     "error.model_checkpoint_missing": "当前模型缺少 checkpoint 文件，请重新注册或重新拉取模型。",
     "error.task_interrupted_restart": "桌面端重启后，任务未继续执行。",
     "error.missing_field": "缺少必填字段：{field}",
@@ -335,9 +318,9 @@ const TRANSLATIONS = {
     "view.models.title": "Model Manager",
     "view.models.subtitle": "View pullable models, maintain local models, and feed workflow dropdowns.",
     "view.home.title": "Environment & System Settings",
-    "view.home.subtitle": "Configure runtime paths, model sources, and dependency health.",
+    "view.home.subtitle": "Configure runtime paths, model locations, and dependency health.",
     "settings.panel.title": "Environment & System Settings",
-    "settings.panel.subtitle": "Configure runtime paths and source directories, then review system dependency status.",
+    "settings.panel.subtitle": "Configure runtime paths and model locations, then review system dependency status.",
     "settings.language.label": "Language",
     "settings.language.option.zh-CN": "Simplified Chinese",
     "settings.language.option.en": "English",
@@ -348,11 +331,6 @@ const TRANSLATIONS = {
     "settings.repo_root.browse": "Browse",
     "settings.catalog_url.label": "Remote Model Catalog URL (optional)",
     "settings.catalog_url.placeholder": "https://example.com/catalog.json",
-    "settings.model_repo.label": "SimVQGAN Source Directory (not a checkpoint directory)",
-    "settings.model_repo.placeholder": "/path/to/SimVQGAN",
-    "settings.model_repo.browse": "Browse",
-    "settings.model_repo.note": "Used only for real-model execution. Do not choose a weight directory such as `checkpoint_1200000`; this field should point to a SimVQGAN source directory that contains `codec/models.py`.",
-    "settings.model_repo.note_checkpoint": "This path looks like a checkpoint weight directory, not a source directory. Choose a SimVQGAN source directory that contains `codec/models.py` instead.",
     "settings.save": "Save Settings",
     "settings.run_doctor": "Run Health Check",
     "doctor.panel.title": "System Health",
@@ -366,7 +344,7 @@ const TRANSLATIONS = {
     "models.local.subtitle": "This page registers local models and checkpoints, and the Encode / Decode dropdowns read directly from it.",
     "models.local.refresh": "Refresh Local",
     "models.detail.title": "Model Details",
-    "models.detail.subtitle": "A model appearing in the list means it has been registered. Whether it can actually run still depends on a valid source directory in System Settings.",
+    "models.detail.subtitle": "A model appearing in the list means it has been registered. Whether it can actually run now mostly depends on the local checkpoint and runtime dependencies.",
     "models.detail.raw": "View Raw Model JSON",
     "models.workflow.title": "What Model Manager Does",
     "models.workflow.body": "This page registers local models, checkpoints, and metadata, and supplies the model dropdowns in Encode / Decode. A model shown as installed is not the same as having everything needed to run real inference.",
@@ -377,9 +355,6 @@ const TRANSLATIONS = {
     "register.checkpoint.label": "Checkpoint Directory",
     "register.checkpoint.placeholder": "/path/to/checkpoint_1200000",
     "register.checkpoint.browse": "Browse",
-    "register.source_repo.label": "Source Repo",
-    "register.source_repo.placeholder": "/path/to/SimVQGAN",
-    "register.source_repo.browse": "Browse",
     "register.config_json.label": "Config JSON",
     "register.config_json.placeholder": "/path/to/train.json",
     "register.config_json.browse": "Browse",
@@ -514,18 +489,17 @@ const TRANSLATIONS = {
     "models.config_path": "Config File",
     "models.checkpoint": "Checkpoint",
     "models.checkpoint.missing": "not recorded",
-    "models.source_repo": "Source Repo",
-    "models.source_repo.missing": "built-in or missing",
     "models.runtime_mode": "Runtime Mode",
+    "models.runtime_backend": "Runtime Backend",
+    "models.backend.builtin": "Built-in SimVQ",
+    "models.backend.stub": "Stub",
     "models.installation": "Installation",
     "models.installation.done": "Installed",
     "models.status": "Run Status",
     "models.status.ready": "Ready to Run",
     "models.status.not_ready": "Not Ready",
-    "models.resolved_source_repo": "Resolved Source Repo",
-    "models.configured_source_repo": "Configured Source Repo",
     "models.ready_issues": "Blocking Issues",
-    "models.runtime_help.not_ready": "This model has been registered locally, but real encode/decode still requires a valid SimVQGAN source directory in System Settings.",
+    "models.runtime_help.not_ready": "This model has been registered locally, but real encode/decode still requires a valid checkpoint and runtime dependencies.",
     "runtime.chunk_size": "Chunk Size",
     "runtime.tokens_per_chunk": "Tokens per Chunk",
     "runtime.codebook_size": "Codebook Size",
@@ -584,11 +558,8 @@ const TRANSLATIONS = {
     "message.inspect.done": "Inspection finished.",
     "message.preflight.model_missing": "Choose a local model first.",
     "message.preflight.model_not_ready": "This model is not ready to run: {issue}",
-    "message.preflight.missing_source_repo": "This model depends on an external SimVQGAN source repo. Set “Model Source Repo” in System Settings or re-register the model.",
     "dialog.settings.repo_root": "Choose SimVQ repo root",
-    "dialog.settings.model_repo": "Choose SimVQGAN source repo",
     "dialog.register.checkpoint": "Choose checkpoint directory",
-    "dialog.register.source_repo": "Choose original SimVQGAN repo",
     "dialog.register.config_json": "Choose config JSON",
     "dialog.encode.input": "Choose POD5",
     "dialog.encode.output": "Save output bundle",
@@ -600,11 +571,6 @@ const TRANSLATIONS = {
     "dialog.filter.bundle": "SimVQ Bundle",
     "error.drag.read_path": "Unable to read the real path of the dropped file. Use “Choose File” instead.",
     "error.drag.invalid_type": "The dropped file type is not supported here.",
-    "error.model_source_repo_missing": "The external source repo required by this model does not exist: {path}. Set “Model Source Repo” in System Settings or re-register the model.",
-    "error.model_source_repo_required": "A compatible SimVQGAN source repo is required for real models. Set it in System Settings first.",
-    "error.configured_source_repo_missing": "The source repo recorded in the model config does not exist: {path}. Set “Model Source Repo” in System Settings or re-register the model.",
-    "error.configured_source_repo_invalid": "The source repo recorded in the model config is missing `codec.models`: {path}. Use a compatible SimVQGAN repo instead.",
-    "error.model_builder_missing": "`codec.models.build_audio_model` was not found under: {path}. Use a compatible SimVQGAN repo instead.",
     "error.model_checkpoint_missing": "This model is missing its checkpoint. Re-register or pull the model again.",
     "error.task_interrupted_restart": "The desktop app restarted before the task could continue.",
     "error.missing_field": "Missing required field: {field}",
@@ -754,8 +720,6 @@ const STATIC_TEXT_BINDINGS = [
   ['#settings-form label:nth-of-type(3) > span', "settings.repo_root.label"],
   ["#settings-repo-browse", "settings.repo_root.browse"],
   ['#settings-form label:nth-of-type(4) > span', "settings.catalog_url.label"],
-  ['#settings-form label:nth-of-type(5) > span', "settings.model_repo.label"],
-  ["#settings-model-source-repo-browse", "settings.model_repo.browse"],
   ['#settings-form button[type="submit"]', "settings.save"],
   ["#doctor-run-button", "settings.run_doctor"],
   ["#view-home .panel.panel-data h3", "doctor.panel.title"],
@@ -777,9 +741,7 @@ const STATIC_TEXT_BINDINGS = [
   ['#register-model-form label:nth-of-type(1) > span', "register.name.label"],
   ['#register-model-form label:nth-of-type(2) > span', "register.checkpoint.label"],
   ["#register-checkpoint-browse", "register.checkpoint.browse"],
-  ['#register-model-form label:nth-of-type(3) > span', "register.source_repo.label"],
-  ["#register-source-repo-browse", "register.source_repo.browse"],
-  ['#register-model-form label:nth-of-type(4) > span', "register.config_json.label"],
+  ['#register-model-form label:nth-of-type(3) > span', "register.config_json.label"],
   ["#register-config-json-browse", "register.config_json.browse"],
   ['#register-model-form .grid.two label:nth-of-type(1) > span', "register.version.label"],
   ['#register-model-form .grid.two label:nth-of-type(2) > span', "register.variant.label"],
@@ -846,11 +808,9 @@ const STATIC_PLACEHOLDER_BINDINGS = [
   ["#settings-python", "settings.python.placeholder"],
   ["#settings-repo-root", "settings.repo_root.placeholder"],
   ["#settings-catalog-url", "settings.catalog_url.placeholder"],
-  ["#settings-model-source-repo", "settings.model_repo.placeholder"],
   ["#models-catalog-url", "models.remote.placeholder"],
   ["#register-name", "register.name.placeholder"],
   ["#register-checkpoint", "register.checkpoint.placeholder"],
-  ["#register-source-repo", "register.source_repo.placeholder"],
   ["#register-config-json", "register.config_json.placeholder"],
   ["#register-version", "register.version.placeholder"],
 ];
@@ -919,39 +879,6 @@ function humanizeErrorMessage(message) {
     return "";
   }
 
-  let match = text.match(/^error:\s*Model source repo does not exist:\s*(.+)$/i);
-  if (match) {
-    return t("error.model_source_repo_missing", { path: match[1] });
-  }
-
-  match = text.match(/^Model source repo does not exist:\s*(.+)$/i);
-  if (match) {
-    return t("error.model_source_repo_missing", { path: match[1] });
-  }
-
-  match = text.match(/^Configured source repo does not exist:\s*(.+)$/i);
-  if (match) {
-    return t("error.configured_source_repo_missing", { path: match[1] });
-  }
-
-  match = text.match(/^Configured source repo is missing codec\.models:\s*(.+)$/i);
-  if (match) {
-    return t("error.configured_source_repo_invalid", { path: match[1] });
-  }
-
-  match = text.match(/^codec\.models\.build_audio_model not found under\s+(.+)$/i);
-  if (match) {
-    return t("error.model_builder_missing", { path: match[1] });
-  }
-
-  if (/Real JAX runtime requires a compatible SimVQGAN source repo/i.test(text)) {
-    return t("error.model_source_repo_required");
-  }
-
-  if (/A compatible SimVQGAN source repo is required for this model/i.test(text)) {
-    return t("error.model_source_repo_required");
-  }
-
   if (/^Checkpoint path is missing\.?$/i.test(text)) {
     return t("error.model_checkpoint_missing");
   }
@@ -960,7 +887,7 @@ function humanizeErrorMessage(message) {
     return t("error.task_interrupted_restart");
   }
 
-  match = text.match(/^Missing required field:\s*(.+)$/i);
+  let match = text.match(/^Missing required field:\s*(.+)$/i);
   if (match) {
     return t("error.missing_field", { field: match[1] });
   }
@@ -1059,23 +986,6 @@ function pathLeaf(value, fallback = "") {
   }
   const parts = text.split(/[\\/]/).filter(Boolean);
   return parts.length ? parts[parts.length - 1] : text;
-}
-
-function looksLikeCheckpointDirectory(value) {
-  const leaf = pathLeaf(value || "").toLowerCase();
-  return /^checkpoint(?:[_-]?\d+)?$/i.test(leaf) || /^checkpoint_\d+$/i.test(leaf);
-}
-
-function renderModelSourceRepoNote() {
-  const note = $("#settings-model-source-repo-note");
-  const input = $("#settings-model-source-repo");
-  if (!note || !input) {
-    return;
-  }
-  const value = String(input.value || "").trim();
-  const checkpointLike = looksLikeCheckpointDirectory(value);
-  note.textContent = t(checkpointLike ? "settings.model_repo.note_checkpoint" : "settings.model_repo.note");
-  note.className = `field-hint${checkpointLike ? " warning" : ""}`;
 }
 
 function emptyState(icon, title, description) {
@@ -1329,13 +1239,8 @@ function renderSettingsForm() {
   $("#settings-python").value = state.settings.pythonExecutable || "";
   $("#settings-repo-root").value = state.settings.repoRoot || "";
   $("#settings-catalog-url").value = state.settings.catalogUrl || "";
-  $("#settings-model-source-repo").value = state.settings.modelSourceRepo || "";
   $("#models-catalog-url").value = state.settings.catalogUrl || "";
-  if (!$("#register-source-repo").value.trim() && state.settings.modelSourceRepo) {
-    $("#register-source-repo").value = state.settings.modelSourceRepo;
-  }
   applyStaticTranslations();
-  renderModelSourceRepoNote();
   updateHeader(state.activeView);
 }
 
@@ -1486,19 +1391,13 @@ function renderModelDetail() {
           <div class="info-rows">
             ${renderInfoRows([
               { label: t("models.runtime_mode"), value: payload.mode },
+              {
+                label: t("models.runtime_backend"),
+                value: t(runtime.backend === "stub" ? "models.backend.stub" : "models.backend.builtin"),
+              },
               { label: t("runtime.chunk_size"), value: runtime.chunk_size },
               { label: t("runtime.tokens_per_chunk"), value: runtime.tokens_per_chunk },
               { label: t("runtime.codebook_size"), value: runtime.codebook_size },
-              {
-                label: t("models.resolved_source_repo"),
-                value: runtime.resolved_source_repo_path || runtime.source_repo_path || t("models.source_repo.missing"),
-                mono: true,
-              },
-              {
-                label: t("models.configured_source_repo"),
-                value: runtime.configured_source_repo_path || t("models.source_repo.missing"),
-                mono: true,
-              },
             ])}
           </div>
           ${
@@ -1809,7 +1708,6 @@ async function saveSettings(event) {
     pythonExecutable: $("#settings-python").value.trim(),
     repoRoot: $("#settings-repo-root").value.trim(),
     catalogUrl: $("#settings-catalog-url").value.trim(),
-    modelSourceRepo: $("#settings-model-source-repo").value.trim(),
   };
   state.settings = await window.simvq.updateSettings(payload);
   renderSettingsForm();
@@ -1943,25 +1841,10 @@ async function bindBrowseButtons() {
     }
   });
 
-  $("#settings-model-source-repo-browse").addEventListener("click", async () => {
-    const value = await choosePath({ kind: "openDirectory", title: t("dialog.settings.model_repo") });
-    if (value) {
-      $("#settings-model-source-repo").value = value;
-      renderModelSourceRepoNote();
-    }
-  });
-
   $("#register-checkpoint-browse").addEventListener("click", async () => {
     const value = await choosePath({ kind: "openDirectory", title: t("dialog.register.checkpoint") });
     if (value) {
       $("#register-checkpoint").value = value;
-    }
-  });
-
-  $("#register-source-repo-browse").addEventListener("click", async () => {
-    const value = await choosePath({ kind: "openDirectory", title: t("dialog.register.source_repo") });
-    if (value) {
-      $("#register-source-repo").value = value;
     }
   });
 
@@ -2040,7 +1923,6 @@ async function handleRegisterLocal(event) {
   const payload = {
     name: $("#register-name").value.trim(),
     checkpoint: $("#register-checkpoint").value.trim(),
-    sourceRepo: $("#register-source-repo").value.trim(),
     configJson: $("#register-config-json").value.trim(),
     version: $("#register-version").value.trim(),
     variant: $("#register-variant").value.trim(),
@@ -2072,7 +1954,7 @@ async function ensureModelReadyForWorkflow(modelName) {
   if (firstIssue) {
     throw new Error(t("message.preflight.model_not_ready", { issue: firstIssue }));
   }
-  throw new Error(t("message.preflight.missing_source_repo"));
+  throw new Error(t("message.preflight.model_not_ready", { issue: t("generic.unknown") }));
 }
 
 async function handleEncode(event) {
@@ -2146,11 +2028,6 @@ function bindActions() {
     renderInspect();
     renderTasks();
     renderAllFilePickers();
-    renderModelSourceRepoNote();
-  });
-
-  $("#settings-model-source-repo").addEventListener("input", () => {
-    renderModelSourceRepoNote();
   });
 
   $("#settings-form").addEventListener("submit", saveSettings);

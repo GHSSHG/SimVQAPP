@@ -91,6 +91,7 @@ Notes for the desktop app:
 
 - It still depends on an external Python environment with the SimVQ runtime dependencies installed.
 - The GUI calls `python -m simvq.cli.main` and uses `PYTHONPATH=<repo>/src`.
+- Real-model execution now uses the built-in SimVQ model builder; an external `SimVQGAN` source checkout is no longer required.
 - If you run a packaged app, make sure the Python executable is valid in the Settings page.
 - Current GUI pages include Doctor, Models, Encode, Decode, Inspect, and Tasks / History.
 

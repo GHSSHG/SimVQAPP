@@ -18,8 +18,6 @@ def test_pull_stub_model_creates_local_cache(tmp_path):
 
 
 def test_register_local_model_creates_symlinked_checkpoint(tmp_path):
-    source_repo = tmp_path / "SimVQGAN"
-    source_repo.mkdir()
     checkpoint = tmp_path / "checkpoint_1200000"
     checkpoint.mkdir()
     (checkpoint / "_METADATA").write_text("{}", encoding="utf-8")
@@ -45,7 +43,6 @@ def test_register_local_model_creates_symlinked_checkpoint(tmp_path):
     cached = store.register_local(
         name="simvq-v45-3x",
         checkpoint_path=checkpoint,
-        source_repo_path=source_repo,
         config_json_path=config_json,
     )
 
@@ -54,6 +51,6 @@ def test_register_local_model_creates_symlinked_checkpoint(tmp_path):
     assert cached.checkpoint_path is not None
     assert cached.checkpoint_path.is_symlink()
     payload = json.loads(cached.config_path.read_text(encoding="utf-8"))
-    assert payload["mode"] == "jax_external_repo"
+    assert payload["mode"] == "jax_builtin"
     assert payload["tokens_per_chunk"] == 4096
-    assert payload["source_repo_path"] == str(source_repo.resolve())
+    assert "source_repo_path" not in payload

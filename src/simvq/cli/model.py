@@ -31,7 +31,6 @@ def run_register_local(args) -> int:
     model = ModelStore().register_local(
         name=args.name,
         checkpoint_path=args.checkpoint,
-        source_repo_path=args.source_repo,
         config_json_path=args.config_json,
         version=args.version,
         variant=args.variant,

@@ -139,7 +139,7 @@
             <article class="panel">
               <div class="panel-header">
                 <h3>环境与系统设置</h3>
-                <p class="panel-subtle">配置运行环境与源码目录，并查看当前系统依赖状态。</p>
+                <p class="panel-subtle">配置运行环境与模型目录，并查看当前系统依赖状态。</p>
               </div>
               <form id="settings-form" class="form">
                 <label>
@@ -163,14 +163,6 @@
                 <label>
                   <span>远程模型目录 URL（可留空）</span>
                   <input id="settings-catalog-url" type="text" placeholder="https://example.com/catalog.json" />
-                </label>
-                <label>
-                  <span>SimVQGAN 源码目录（不是 checkpoint 目录）</span>
-                  <div class="input-row">
-                    <input id="settings-model-source-repo" type="text" placeholder="/path/to/SimVQGAN" />
-                    <button type="button" id="settings-model-source-repo-browse" class="ghost-button">选择目录</button>
-                  </div>
-                  <p id="settings-model-source-repo-note" class="field-hint">仅用于真实模型运行。不要选择 `checkpoint_1200000` 这类权重目录；这里应指向包含 `codec/models.py` 的 SimVQGAN 源码目录。</p>
                 </label>
                 <div class="button-row">
                   <button type="submit">保存设置</button>
@@ -221,7 +213,7 @@
               <div id="local-models-list" class="card-list empty-state-host">暂无本地模型。</div>
               <div class="inline-note">
                 <strong id="models-workflow-note-title">模型管理页的作用</strong>
-                <p id="models-workflow-note-body">这里负责登记本地模型、checkpoint 与元数据，并为 Encode / Decode 提供模型下拉项。模型显示为“已安装”不等于已经具备真实运行所需的源码目录。</p>
+                <p id="models-workflow-note-body">这里负责登记本地模型、checkpoint 与元数据，并为 Encode / Decode 提供模型下拉项。</p>
               </div>
             </article>
           </div>
@@ -230,7 +222,7 @@
             <article class="panel panel-data">
               <div class="panel-header">
                 <h3>模型详情</h3>
-                <p class="panel-subtle">模型出现在列表中代表已经登记；是否能真实运行，还要看系统设置里的源码目录是否有效。</p>
+                <p class="panel-subtle">模型出现在列表中代表已经登记；是否能真实运行，主要取决于本地 checkpoint 与运行环境是否完整。</p>
               </div>
               <div id="model-detail-summary" class="detail-summary empty-state-host"></div>
               <details class="debug-section">
@@ -258,13 +250,6 @@
                       <div class="input-row">
                         <input id="register-checkpoint" type="text" placeholder="/path/to/checkpoint_1200000" />
                         <button type="button" id="register-checkpoint-browse" class="ghost-button">选择目录</button>
-                      </div>
-                    </label>
-                    <label>
-                      <span>来源仓库</span>
-                      <div class="input-row">
-                        <input id="register-source-repo" type="text" placeholder="/path/to/SimVQGAN" />
-                        <button type="button" id="register-source-repo-browse" class="ghost-button">选择目录</button>
                       </div>
                     </label>
                     <label>

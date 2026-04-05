@@ -1,9 +1,6 @@
 from __future__ import annotations
 
-import importlib
 import json
-import os
-import sys
 from pathlib import Path
 from typing import Any
 
@@ -13,124 +10,38 @@ from .errors import DependencyError, RuntimeNotReadyError
 from .types import CachedModel
 
 
-REAL_JAX_MODES = {"jax_external_repo", "jax_orbax_external_repo", "real_jax"}
-EXTERNAL_REPO_OVERRIDE_ENV_VARS = ("SIMVQ_MODEL_SOURCE_REPO", "SIMVQ_SOURCE_REPO_PATH")
+REAL_JAX_MODES = {"jax_builtin", "jax_external_repo", "jax_orbax_external_repo", "real_jax"}
 
 
 def _load_runtime_config(model: CachedModel) -> dict[str, Any]:
     return json.loads(model.config_path.read_text(encoding="utf-8"))
 
 
-def _repo_has_model_builder(candidate: Path) -> bool:
-    resolved = candidate.expanduser().resolve()
-    return (resolved / "codec" / "models.py").exists() or (resolved / "codec" / "models" / "__init__.py").exists()
+def _load_builtin_builder():
+    try:
+        from ._simvqgan import build_audio_model
 
-
-def _candidate_repo_paths(config: dict[str, Any]) -> list[tuple[str, Path]]:
-    candidates: list[tuple[str, Path]] = []
-    seen: set[str] = set()
-
-    def add(label: str, raw_value: Any) -> None:
-        text = str(raw_value or "").strip()
-        if not text:
-            return
-        resolved = Path(text).expanduser().resolve()
-        key = str(resolved)
-        if key in seen:
-            return
-        seen.add(key)
-        candidates.append((label, resolved))
-
-    add("configured", config.get("source_repo_path"))
-    for env_name in EXTERNAL_REPO_OVERRIDE_ENV_VARS:
-        add(f"env:{env_name}", os.environ.get(env_name))
-
-    source_config_json = str(config.get("source_config_json") or "").strip()
-    if source_config_json:
-        config_path = Path(source_config_json).expanduser().resolve()
-        search_roots = [config_path, *config_path.parents]
-        for index, parent in enumerate(search_roots):
-            add(f"source_config_parent:{index}", parent)
-
-    add("cwd", Path.cwd())
-    return candidates
-
-
-def resolve_external_repo_path(config: dict[str, Any]) -> tuple[Path | None, str | None]:
-    for label, candidate in _candidate_repo_paths(config):
-        if candidate.exists() and _repo_has_model_builder(candidate):
-            return candidate, label
-    return None, None
+        return build_audio_model
+    except Exception as exc:  # pragma: no cover - import guard
+        raise DependencyError(f"Failed to load built-in SimVQ model builder: {exc}") from exc
 
 
 def runtime_health(model: CachedModel) -> dict[str, Any]:
     config = _load_runtime_config(model)
     mode = str(config.get("mode", model.mode))
     checkpoint_exists = bool(model.checkpoint_path and model.checkpoint_path.exists())
-    configured_source_repo = str(config.get("source_repo_path") or "").strip()
-    resolved_source_repo, resolved_from = resolve_external_repo_path(config)
     issues: list[str] = []
 
     if not checkpoint_exists:
         issues.append("Checkpoint path is missing.")
 
-    if mode in REAL_JAX_MODES:
-        if resolved_source_repo is None:
-            if configured_source_repo:
-                configured_path = Path(configured_source_repo).expanduser().resolve()
-                if not configured_path.exists():
-                    issues.append(f"Configured source repo does not exist: {configured_path}")
-                elif not _repo_has_model_builder(configured_path):
-                    issues.append(f"Configured source repo is missing codec.models: {configured_path}")
-            env_hints = ", ".join(EXTERNAL_REPO_OVERRIDE_ENV_VARS)
-            issues.append(
-                "A compatible SimVQGAN source repo is required for this model. "
-                f"Set one in the desktop settings or via {env_hints}."
-            )
-
     return {
         "mode": mode,
-        "ready": checkpoint_exists and (mode not in REAL_JAX_MODES or resolved_source_repo is not None),
+        "backend": ("builtin" if mode in REAL_JAX_MODES else "stub"),
+        "ready": checkpoint_exists,
         "checkpoint_exists": checkpoint_exists,
-        "configured_source_repo_path": configured_source_repo or None,
-        "resolved_source_repo_path": (None if resolved_source_repo is None else str(resolved_source_repo)),
-        "resolved_source_repo_from": resolved_from,
         "issues": issues,
     }
-
-
-def _pop_conflicting_codec_modules(repo_root: Path) -> None:
-    for module_name, module in list(sys.modules.items()):
-        if module_name != "codec" and not module_name.startswith("codec."):
-            continue
-        module_file = getattr(module, "__file__", None)
-        if not module_file:
-            continue
-        try:
-            module_path = Path(module_file).resolve()
-        except Exception:
-            continue
-        if module_path.is_relative_to(repo_root):
-            continue
-        sys.modules.pop(module_name, None)
-
-
-def _load_external_builder(repo_root: Path):
-    resolved_repo = repo_root.expanduser().resolve()
-    if not resolved_repo.exists():
-        raise RuntimeNotReadyError(f"Model source repo does not exist: {resolved_repo}")
-    _pop_conflicting_codec_modules(resolved_repo)
-    if str(resolved_repo) not in sys.path:
-        sys.path.insert(0, str(resolved_repo))
-    importlib.invalidate_caches()
-    try:
-        module = importlib.import_module("codec.models")
-    except Exception as exc:
-        raise DependencyError(f"Failed to import model builder from {resolved_repo}: {exc}") from exc
-    build_audio_model = getattr(module, "build_audio_model", None)
-    if build_audio_model is None:
-        raise RuntimeNotReadyError(f"codec.models.build_audio_model not found under {resolved_repo}")
-    return build_audio_model
 
 
 def _resolve_device(jax_module, device: str):
@@ -252,7 +163,7 @@ class _StubBackend:
         return expanded[:, : self.chunk_size].astype(np.float32)
 
 
-class _JaxExternalRepoBackend:
+class _BuiltinJaxBackend:
     def __init__(self, *, config: dict[str, Any], checkpoint_path: Path | None, device: str = "auto"):
         if checkpoint_path is None:
             raise RuntimeNotReadyError("Real JAX runtime requires a local checkpoint path.")
@@ -260,21 +171,7 @@ class _JaxExternalRepoBackend:
             raise RuntimeNotReadyError(f"Checkpoint path does not exist: {checkpoint_path}")
 
         model_cfg = dict(config.get("model_config") or config.get("model") or {})
-        source_repo_path = config.get("source_repo_path")
-        resolved_source_repo, _resolved_from = resolve_external_repo_path(config)
-        if resolved_source_repo is None:
-            configured = str(source_repo_path or "").strip()
-            if configured:
-                raise RuntimeNotReadyError(
-                    f"Model source repo does not exist: {Path(configured).expanduser().resolve()}"
-                )
-            env_hints = ", ".join(EXTERNAL_REPO_OVERRIDE_ENV_VARS)
-            raise RuntimeNotReadyError(
-                "Real JAX runtime requires a compatible SimVQGAN source repo. "
-                f"Provide source_repo_path in the cached model or set {env_hints}."
-            )
-
-        build_audio_model = _load_external_builder(resolved_source_repo)
+        build_audio_model = _load_builtin_builder()
         jax, restored, resolved_device = _restore_orbax_checkpoint(checkpoint_path.expanduser().resolve(), device=device)
         variables, checkpoint_step = _extract_generator_variables(restored)
 
@@ -423,7 +320,7 @@ class ModelRuntime:
                 codebook_size=int(config.get("codebook_size", 65536)),
             )
         elif mode in REAL_JAX_MODES:
-            backend = _JaxExternalRepoBackend(
+            backend = _BuiltinJaxBackend(
                 config=config,
                 checkpoint_path=model.checkpoint_path,
                 device=device,
@@ -466,13 +363,10 @@ def runtime_summary(model: CachedModel) -> dict[str, object]:
         "model_name": model.name,
         "model_version": model.version,
         "mode": str(config.get("mode", model.mode)),
+        "backend": health["backend"],
         "chunk_size": int(config.get("chunk_size", 12288)),
         "tokens_per_chunk": int(config.get("tokens_per_chunk", 4096)),
         "codebook_size": int(config.get("codebook_size", 65536)),
-        "source_repo_path": health["resolved_source_repo_path"] or health["configured_source_repo_path"],
-        "configured_source_repo_path": health["configured_source_repo_path"],
-        "resolved_source_repo_path": health["resolved_source_repo_path"],
-        "resolved_source_repo_from": health["resolved_source_repo_from"],
         "checkpoint_exists": health["checkpoint_exists"],
         "ready": health["ready"],
         "issues": health["issues"],

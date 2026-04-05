@@ -294,20 +294,16 @@ class ModelStore:
         *,
         name: str,
         checkpoint_path: str | Path,
-        source_repo_path: str | Path,
         config_json_path: str | Path,
         version: str | None = None,
         variant: str | None = None,
         overwrite: bool = False,
     ) -> CachedModel:
         checkpoint_src = Path(checkpoint_path).expanduser().resolve()
-        source_repo = Path(source_repo_path).expanduser().resolve()
         config_json = Path(config_json_path).expanduser().resolve()
 
         if not checkpoint_src.exists():
             raise ModelStoreError(f"Checkpoint path does not exist: {checkpoint_src}")
-        if not source_repo.exists():
-            raise ModelStoreError(f"Source repo path does not exist: {source_repo}")
         if not config_json.exists():
             raise ModelStoreError(f"Config JSON path does not exist: {config_json}")
 
@@ -330,13 +326,11 @@ class ModelStore:
             "model_name": str(name),
             "model_version": resolved_version,
             "variant": resolved_variant,
-            "mode": "jax_external_repo",
+            "mode": "jax_builtin",
             "chunk_size": int(runtime_cfg["chunk_size"]),
             "hop_size": int(runtime_cfg["hop_size"]),
             "tokens_per_chunk": int(runtime_cfg["tokens_per_chunk"]),
             "codebook_size": int(runtime_cfg["codebook_size"]),
-            "source_repo_path": str(source_repo),
-            "source_config_json": str(config_json),
             "model_config": runtime_cfg["model_config"],
         }
         _write_json(config_path, config_payload)
@@ -354,7 +348,7 @@ class ModelStore:
                 "name": str(name),
                 "version": resolved_version,
                 "variant": resolved_variant,
-                "mode": "jax_external_repo",
+                "mode": "jax_builtin",
                 "checkpoint_relpath": "checkpoint",
             },
         )

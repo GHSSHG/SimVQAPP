@@ -96,7 +96,6 @@ function normalizeSettings(appInstance, payload = {}) {
     pythonExecutable: String(payload.pythonExecutable || detectDefaultPythonExecutable()).trim(),
     repoRoot: resolveRepoRoot(appInstance, payload.repoRoot),
     catalogUrl: String(payload.catalogUrl || "").trim(),
-    modelSourceRepo: String(payload.modelSourceRepo || process.env.SIMVQ_MODEL_SOURCE_REPO || "").trim(),
     language: normalizeLanguage(payload.language || detectDefaultLanguage(appInstance)),
     windowBounds: payload.windowBounds || null,
   };

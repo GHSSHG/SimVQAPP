@@ -65,7 +65,7 @@ def build_parser() -> argparse.ArgumentParser:
     register_local = model_sub.add_parser("register-local", help="Register a local checkpoint into the cache")
     register_local.add_argument("name")
     register_local.add_argument("--checkpoint", required=True)
-    register_local.add_argument("--source-repo", required=True)
+    register_local.add_argument("--source-repo", help=argparse.SUPPRESS)
     register_local.add_argument("--config-json", required=True)
     register_local.add_argument("--version")
     register_local.add_argument("--variant", default="v45")
