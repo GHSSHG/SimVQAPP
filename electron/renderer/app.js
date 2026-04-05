@@ -41,7 +41,6 @@ const TASK_KIND_LABELS = {
 
 const state = {
   settings: null,
-  versions: null,
   doctor: null,
   localModels: [],
   remoteModels: [],
@@ -222,50 +221,6 @@ function activateView(viewName) {
   updateHeader(viewName);
 }
 
-function setModalOpen(open) {
-  const modal = $("#settings-modal");
-  if (!modal) {
-    return;
-  }
-  modal.hidden = !open;
-  modal.setAttribute("aria-hidden", String(!open));
-  document.body.classList.toggle("modal-open", open);
-}
-
-function renderSettingsSummary() {
-  const summary = $("#settings-summary");
-  if (!summary) {
-    return;
-  }
-  if (!state.settings) {
-    summary.innerHTML = emptyState("◎", "尚未加载设置", "读取成功后会在这里展示 Python、仓库目录和 catalog。");
-    return;
-  }
-  summary.innerHTML = renderInfoRows([
-    { label: "Python 可执行文件", value: state.settings.pythonExecutable, mono: true },
-    { label: "SimVQ 仓库根目录", value: state.settings.repoRoot, mono: true },
-    { label: "Catalog URL", value: state.settings.catalogUrl || "内置默认", mono: true },
-  ]);
-}
-
-function renderVersionsSummary() {
-  const summary = $("#versions-summary");
-  if (!summary) {
-    return;
-  }
-  if (!state.versions) {
-    summary.innerHTML = emptyState("◌", "尚未加载版本信息", "App、Electron、Node 和用户数据目录会显示在这里。");
-    return;
-  }
-  summary.innerHTML = renderInfoRows([
-    { label: "App", value: state.versions.appVersion },
-    { label: "Electron", value: state.versions.electronVersion },
-    { label: "Node", value: state.versions.nodeVersion },
-    { label: "Chrome", value: state.versions.chromeVersion },
-    { label: "User Data", value: state.versions.userDataPath, mono: true },
-  ]);
-}
-
 function renderSettingsForm() {
   if (!state.settings) {
     return;
@@ -274,7 +229,6 @@ function renderSettingsForm() {
   $("#settings-repo-root").value = state.settings.repoRoot || "";
   $("#settings-catalog-url").value = state.settings.catalogUrl || "";
   $("#models-catalog-url").value = state.settings.catalogUrl || "";
-  renderSettingsSummary();
 }
 
 function renderDoctor() {
@@ -626,9 +580,7 @@ function syncTask(task) {
 
 async function refreshSettingsAndVersions() {
   state.settings = await window.simvq.getSettings();
-  state.versions = await window.simvq.getVersions();
   renderSettingsForm();
-  renderVersionsSummary();
 }
 
 async function refreshDoctor() {
@@ -844,22 +796,6 @@ function bindNav() {
   });
 }
 
-function bindModal() {
-  $("#settings-modal-open").addEventListener("click", () => setModalOpen(true));
-  $("#settings-modal-close").addEventListener("click", () => setModalOpen(false));
-  $("#settings-modal").addEventListener("click", (event) => {
-    const target = event.target;
-    if (target instanceof HTMLElement && "modalClose" in target.dataset) {
-      setModalOpen(false);
-    }
-  });
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") {
-      setModalOpen(false);
-    }
-  });
-}
-
 function bindActions() {
   $("#settings-form").addEventListener("submit", saveSettings);
   $("#doctor-run-button").addEventListener("click", async () => {
@@ -992,7 +928,6 @@ function subscribeTaskEvents() {
 
 async function bootstrap() {
   bindNav();
-  bindModal();
   bindActions();
   await bindBrowseButtons();
   subscribeTaskEvents();

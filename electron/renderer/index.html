@@ -27,13 +27,6 @@
           <button class="nav-button" data-view-target="inspect">Inspect</button>
           <button class="nav-button" data-view-target="tasks">任务 / 历史</button>
         </nav>
-
-        <div class="sidebar-tools">
-          <button id="settings-modal-open" type="button" class="sidebar-utility ghost-button">
-            <span class="sidebar-utility-icon">⚙</span>
-            <span>设置 / 关于</span>
-          </button>
-        </div>
       </aside>
 
       <main class="content">
@@ -380,29 +373,6 @@
           </div>
         </section>
       </main>
-    </div>
-
-    <div id="settings-modal" class="modal-shell" hidden>
-      <button type="button" class="modal-backdrop" data-modal-close aria-label="关闭设置弹窗"></button>
-      <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
-        <div class="modal-header">
-          <div>
-            <p class="modal-eyebrow">Settings / About</p>
-            <h2 id="settings-modal-title">桌面端环境信息</h2>
-          </div>
-          <button id="settings-modal-close" type="button" class="ghost-button">关闭</button>
-        </div>
-        <div class="modal-grid">
-          <article class="modal-block">
-            <h3>运行环境</h3>
-            <div id="settings-summary" class="info-rows"></div>
-          </article>
-          <article class="modal-block">
-            <h3>版本信息</h3>
-            <div id="versions-summary" class="info-rows"></div>
-          </article>
-        </div>
-      </section>
     </div>
 
     <script src="./app.js"></script>
