@@ -25,6 +25,30 @@ function detectDefaultRepoRoot(appInstance) {
   return candidates.find(repoLooksValid) || path.resolve(__dirname, "..", "..");
 }
 
+function looksLikePackagedRepoRoot(candidate) {
+  const resolved = path.resolve(String(candidate || ""));
+  return /[/\\]dist[/\\].+[/\\](Resources|resources)[/\\]app$/.test(resolved);
+}
+
+function resolveRepoRoot(appInstance, candidate) {
+  const detected = detectDefaultRepoRoot(appInstance);
+  const raw = String(candidate || "").trim();
+  if (!raw) {
+    return detected;
+  }
+
+  const resolved = path.resolve(raw);
+  if (
+    appInstance &&
+    appInstance.isPackaged === false &&
+    repoLooksValid(detected) &&
+    looksLikePackagedRepoRoot(resolved)
+  ) {
+    return detected;
+  }
+  return resolved;
+}
+
 function detectDefaultPythonExecutable() {
   const condaPython = process.env.CONDA_PREFIX
     ? path.join(process.env.CONDA_PREFIX, "bin", "python")
@@ -48,11 +72,32 @@ function detectDefaultPythonExecutable() {
   return "python";
 }
 
+function normalizeLanguage(value) {
+  const raw = String(value || "").trim().toLowerCase();
+  if (!raw) {
+    return "zh-CN";
+  }
+  if (raw === "en" || raw === "en-us" || raw === "en-gb") {
+    return "en";
+  }
+  if (raw === "zh" || raw === "zh-cn" || raw === "zh-hans") {
+    return "zh-CN";
+  }
+  return "zh-CN";
+}
+
+function detectDefaultLanguage(appInstance) {
+  const configured = process.env.SIMVQ_LANGUAGE || process.env.LANG || (appInstance && appInstance.getLocale?.());
+  return normalizeLanguage(configured);
+}
+
 function normalizeSettings(appInstance, payload = {}) {
   return {
     pythonExecutable: String(payload.pythonExecutable || detectDefaultPythonExecutable()).trim(),
-    repoRoot: path.resolve(String(payload.repoRoot || detectDefaultRepoRoot(appInstance)).trim()),
+    repoRoot: resolveRepoRoot(appInstance, payload.repoRoot),
     catalogUrl: String(payload.catalogUrl || "").trim(),
+    modelSourceRepo: String(payload.modelSourceRepo || process.env.SIMVQ_MODEL_SOURCE_REPO || "").trim(),
+    language: normalizeLanguage(payload.language || detectDefaultLanguage(appInstance)),
     windowBounds: payload.windowBounds || null,
   };
 }
@@ -131,6 +176,8 @@ module.exports = {
   JsonStore,
   createStores,
   detectDefaultPythonExecutable,
+  detectDefaultLanguage,
   detectDefaultRepoRoot,
+  normalizeLanguage,
   normalizeSettings,
 };

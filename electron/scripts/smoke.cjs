@@ -43,7 +43,11 @@ async function main() {
   console.log(JSON.stringify(doctor, null, 2));
 
   console.log("[2/5] local models");
-  const localModels = await backend.listLocalModels();
+  let localModels = await backend.listLocalModels();
+  if (!localModels.some((item) => item.name === "simvq-v45-stub")) {
+    await backend.pullModel("simvq-v45-stub");
+    localModels = await backend.listLocalModels();
+  }
   console.log(JSON.stringify(localModels, null, 2));
 
   const bundlePath = path.join(repoRoot, "outputs", "multi_fast5_zip.real.fixed.vq.tar.gz");

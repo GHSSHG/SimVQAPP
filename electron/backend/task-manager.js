@@ -63,7 +63,7 @@ function normalizePersistedTask(task) {
       ...normalized,
       status: "interrupted",
       endedAt: normalized.endedAt || nowIso(),
-      error: normalized.error || "桌面端重启，任务未继续执行。",
+      error: normalized.error || "Desktop app restarted before the task could continue.",
     };
   }
   return normalized;

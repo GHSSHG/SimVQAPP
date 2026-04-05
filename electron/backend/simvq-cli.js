@@ -126,11 +126,17 @@ class SimVQCliBackend {
   spawnCommand(args, options = {}) {
     const settings = this.resolveSettings(options.settings);
     const commandArgs = ["-m", "simvq.cli.main", ...args];
+    const extraEnv = {
+      ...options.env,
+    };
+    if (settings.modelSourceRepo) {
+      extraEnv.SIMVQ_MODEL_SOURCE_REPO = String(settings.modelSourceRepo);
+    }
     const child = spawn(settings.pythonExecutable, commandArgs, {
       cwd: options.cwd || settings.repoRoot,
       env: {
         ...process.env,
-        ...options.env,
+        ...extraEnv,
         PYTHONPATH: composePythonPath(settings.repoRoot),
       },
       stdio: ["ignore", "pipe", "pipe"],
