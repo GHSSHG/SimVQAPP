@@ -11,9 +11,11 @@
       <aside class="sidebar">
         <div class="brand">
           <div class="brand-mark">SV</div>
-          <div>
-            <h1>SimVQ Desktop</h1>
-            <p>CLI 外壳 / 推理工作台</p>
+          <div class="brand-copy">
+            <h1>
+              <span class="brand-primary">SimVQ</span>
+              <span class="brand-secondary">Desktop</span>
+            </h1>
           </div>
         </div>
 
@@ -26,9 +28,11 @@
           <button class="nav-button" data-view-target="tasks">任务 / 历史</button>
         </nav>
 
-        <div class="sidebar-footer">
-          <div id="settings-summary" class="mini-block"></div>
-          <div id="versions-summary" class="mini-block muted"></div>
+        <div class="sidebar-tools">
+          <button id="settings-modal-open" type="button" class="sidebar-utility ghost-button">
+            <span class="sidebar-utility-icon">⚙</span>
+            <span>设置 / 关于</span>
+          </button>
         </div>
       </aside>
 
@@ -46,10 +50,11 @@
         </header>
 
         <section id="view-home" class="view active">
-          <div class="grid two">
+          <div class="layout-split">
             <article class="panel">
               <div class="panel-header">
                 <h3>运行设置</h3>
+                <p class="panel-subtle">这些设置只影响桌面端如何调用本地 Python CLI。</p>
               </div>
               <form id="settings-form" class="form">
                 <label>
@@ -75,42 +80,53 @@
               <div id="settings-message" class="message"></div>
             </article>
 
-            <article class="panel">
+            <article class="panel panel-data">
               <div class="panel-header">
                 <h3>Doctor 结果</h3>
+                <p class="panel-subtle">默认显示结构化状态，原始 JSON 收进调试视图。</p>
               </div>
-              <div id="doctor-summary" class="doctor-summary empty">尚未运行。</div>
-              <pre id="doctor-json" class="json-output"></pre>
+              <div id="doctor-summary" class="doctor-summary empty-state-host">尚未运行。</div>
+              <details class="debug-section">
+                <summary>查看原始诊断 JSON</summary>
+                <pre id="doctor-json" class="json-output"></pre>
+              </details>
             </article>
           </div>
         </section>
 
         <section id="view-models" class="view">
-          <div class="grid two">
+          <div class="layout-split">
             <article class="panel">
-              <div class="panel-header inline">
-                <h3>远程模型</h3>
-                <div class="button-row compact">
+              <div class="panel-header stacked">
+                <div>
+                  <h3>远程模型</h3>
+                  <p class="panel-subtle">查看 catalog 中可拉取的模型定义。</p>
+                </div>
+                <div class="toolbar toolbar-stretch">
                   <input id="models-catalog-url" type="text" placeholder="沿用设置中的 catalog URL" />
                   <button id="models-refresh-remote" type="button" class="ghost-button">刷新远程</button>
                 </div>
               </div>
-              <div id="remote-models-list" class="card-list empty">暂无数据。</div>
+              <div id="remote-models-list" class="card-list empty-state-host">暂无数据。</div>
             </article>
 
             <article class="panel">
               <div class="panel-header inline">
-                <h3>本地模型</h3>
+                <div>
+                  <h3>本地模型</h3>
+                  <p class="panel-subtle">缓存中的模型可直接用于 GUI 任务。</p>
+                </div>
                 <button id="models-refresh-local" type="button" class="ghost-button">刷新本地</button>
               </div>
-              <div id="local-models-list" class="card-list empty">暂无本地模型。</div>
+              <div id="local-models-list" class="card-list empty-state-host">暂无本地模型。</div>
             </article>
           </div>
 
-          <div class="grid two">
+          <div class="layout-split">
             <article class="panel">
               <div class="panel-header">
                 <h3>注册本地模型</h3>
+                <p class="panel-subtle">把已有 checkpoint 注册到本地缓存，供桌面端直接调用。</p>
               </div>
               <form id="register-model-form" class="form">
                 <label>
@@ -159,20 +175,26 @@
               <div id="models-message" class="message"></div>
             </article>
 
-            <article class="panel">
+            <article class="panel panel-data">
               <div class="panel-header">
                 <h3>模型详情</h3>
+                <p class="panel-subtle">优先显示关键信息，调试区保留原始 payload。</p>
               </div>
-              <pre id="model-detail-json" class="json-output"></pre>
+              <div id="model-detail-summary" class="detail-summary empty-state-host"></div>
+              <details class="debug-section">
+                <summary>查看原始模型 JSON</summary>
+                <pre id="model-detail-json" class="json-output"></pre>
+              </details>
             </article>
           </div>
         </section>
 
         <section id="view-encode" class="view">
-          <div class="grid two">
+          <div class="workflow-layout">
             <article class="panel">
               <div class="panel-header">
                 <h3>Encode 任务</h3>
+                <p class="panel-subtle">填写输入、模型和输出后启动压缩任务。</p>
               </div>
               <form id="encode-form" class="form">
                 <label>
@@ -218,30 +240,31 @@
                   <span>允许覆盖输出文件</span>
                 </label>
                 <div class="button-row">
-                  <button type="submit">开始 Encode</button>
+                  <button type="submit" class="primary-button">开始 Encode</button>
                 </div>
               </form>
               <div id="encode-message" class="message"></div>
             </article>
 
-            <article class="panel">
-              <div class="panel-header">
-                <h3>说明</h3>
+            <aside class="helper-rail">
+              <div class="helper-note">
+                <h3>执行提示</h3>
+                <ul class="tips">
+                  <li>GUI 只负责参数组织和任务管理，推理仍由 Python CLI 执行。</li>
+                  <li>短参数输入框已按数字类字段收窄，主要关注模型、输入和输出路径即可。</li>
+                  <li>任务启动后，日志和结果会自动流入“任务 / 历史”。</li>
+                </ul>
               </div>
-              <ul class="tips">
-                <li>GUI 直接复用已有 Python CLI，不重复实现推理逻辑。</li>
-                <li>默认输出仍然是 `.vq.tar.gz`。</li>
-                <li>任务启动后可到“任务 / 历史”页面看日志和结果。</li>
-              </ul>
-            </article>
+            </aside>
           </div>
         </section>
 
         <section id="view-decode" class="view">
-          <div class="grid two">
+          <div class="workflow-layout">
             <article class="panel">
               <div class="panel-header">
                 <h3>Decode 任务</h3>
+                <p class="panel-subtle">从 bundle 恢复 POD5，并把输出和日志统一沉淀到任务面板。</p>
               </div>
               <form id="decode-form" class="form">
                 <label>
@@ -271,30 +294,31 @@
                   <span>允许覆盖输出文件</span>
                 </label>
                 <div class="button-row">
-                  <button type="submit">开始 Decode</button>
+                  <button type="submit" class="primary-button">开始 Decode</button>
                 </div>
               </form>
               <div id="decode-message" class="message"></div>
             </article>
 
-            <article class="panel">
-              <div class="panel-header">
-                <h3>说明</h3>
+            <aside class="helper-rail">
+              <div class="helper-note">
+                <h3>执行提示</h3>
+                <ul class="tips">
+                  <li>Decode 会校验 bundle 中记录的模型名，先 Inspect 再重建更稳妥。</li>
+                  <li>这里只保留必要表单，详细输出路径和命令行记录放在任务详情里。</li>
+                  <li>如果目标路径已存在，记得显式勾选覆盖。</li>
+                </ul>
               </div>
-              <ul class="tips">
-                <li>Decode 会校验 bundle 中记录的模型名。</li>
-                <li>推荐先用 Inspect 看清 manifest，再执行重建。</li>
-                <li>日志、summary 和输出路径都会进入任务历史。</li>
-              </ul>
-            </article>
+            </aside>
           </div>
         </section>
 
         <section id="view-inspect" class="view">
-          <div class="grid two">
+          <div class="layout-split">
             <article class="panel">
               <div class="panel-header">
                 <h3>Inspect Bundle</h3>
+                <p class="panel-subtle">读取 bundle manifest，并把关键字段整理成可读摘要。</p>
               </div>
               <form id="inspect-form" class="form">
                 <label>
@@ -309,39 +333,76 @@
                 </div>
               </form>
               <div id="inspect-message" class="message"></div>
-              <div id="inspect-summary" class="inspect-summary empty">暂无结果。</div>
             </article>
 
-            <article class="panel">
+            <article class="panel panel-data">
               <div class="panel-header">
-                <h3>Manifest JSON</h3>
+                <h3>Manifest 摘要</h3>
+                <p class="panel-subtle">默认只看模型、分块、计数和路径，原始 JSON 收进调试区。</p>
               </div>
-              <pre id="inspect-json" class="json-output"></pre>
+              <div id="inspect-summary" class="inspect-summary empty-state-host">暂无结果。</div>
+              <details class="debug-section">
+                <summary>查看原始 Manifest JSON</summary>
+                <pre id="inspect-json" class="json-output"></pre>
+              </details>
             </article>
           </div>
         </section>
 
         <section id="view-tasks" class="view">
-          <div class="grid two">
+          <div class="layout-split">
             <article class="panel">
               <div class="panel-header inline">
-                <h3>任务列表</h3>
+                <div>
+                  <h3>任务列表</h3>
+                  <p class="panel-subtle">最近的 encode / decode 任务会保留在这里。</p>
+                </div>
                 <button id="tasks-refresh-button" type="button" class="ghost-button">刷新任务</button>
               </div>
-              <div id="tasks-list" class="card-list empty">暂无任务。</div>
+              <div id="tasks-list" class="card-list empty-state-host">暂无任务。</div>
             </article>
 
-            <article class="panel">
+            <article class="panel panel-data">
               <div class="panel-header">
                 <h3>任务详情</h3>
+                <p class="panel-subtle">优先展示摘要、输出操作和日志，JSON 退到调试层。</p>
               </div>
-              <div id="task-detail-summary" class="task-detail empty">选择左侧任务查看详情。</div>
-              <pre id="task-detail-json" class="json-output"></pre>
-              <pre id="task-detail-log" class="log-output"></pre>
+              <div id="task-detail-summary" class="task-detail empty-state-host">选择左侧任务查看详情。</div>
+              <details class="debug-section">
+                <summary>查看结果 JSON</summary>
+                <pre id="task-detail-json" class="json-output"></pre>
+              </details>
+              <div class="log-panel">
+                <div class="log-panel-header">任务日志</div>
+                <pre id="task-detail-log" class="log-output"></pre>
+              </div>
             </article>
           </div>
         </section>
       </main>
+    </div>
+
+    <div id="settings-modal" class="modal-shell" hidden>
+      <button type="button" class="modal-backdrop" data-modal-close aria-label="关闭设置弹窗"></button>
+      <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
+        <div class="modal-header">
+          <div>
+            <p class="modal-eyebrow">Settings / About</p>
+            <h2 id="settings-modal-title">桌面端环境信息</h2>
+          </div>
+          <button id="settings-modal-close" type="button" class="ghost-button">关闭</button>
+        </div>
+        <div class="modal-grid">
+          <article class="modal-block">
+            <h3>运行环境</h3>
+            <div id="settings-summary" class="info-rows"></div>
+          </article>
+          <article class="modal-block">
+            <h3>版本信息</h3>
+            <div id="versions-summary" class="info-rows"></div>
+          </article>
+        </div>
+      </section>
     </div>
 
     <script src="./app.js"></script>

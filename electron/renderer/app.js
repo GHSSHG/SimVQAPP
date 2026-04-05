@@ -21,8 +21,22 @@ const VIEWS = {
   },
   tasks: {
     title: "任务 / 历史",
-    subtitle: "查看 encode/decode 日志、summary、状态和输出路径。",
+    subtitle: "查看 encode / decode 日志、summary、状态和输出路径。",
   },
+};
+
+const TASK_STATUS_LABELS = {
+  running: "进行中",
+  cancelling: "取消中",
+  completed: "已完成",
+  failed: "失败",
+  cancelled: "已取消",
+  interrupted: "已中断",
+};
+
+const TASK_KIND_LABELS = {
+  encode: "Encode",
+  decode: "Decode",
 };
 
 const state = {
@@ -52,6 +66,13 @@ function escapeHtml(text) {
 
 function formatJson(value) {
   return value ? JSON.stringify(value, null, 2) : "";
+}
+
+function displayValue(value, fallback = "—") {
+  if (value === undefined || value === null || value === "") {
+    return fallback;
+  }
+  return String(value);
 }
 
 function formatBytes(bytes) {
@@ -97,6 +118,9 @@ function getModelNames() {
 
 function setMessage(elementId, text, tone = "info") {
   const element = document.getElementById(elementId);
+  if (!element) {
+    return;
+  }
   element.textContent = text || "";
   element.className = `message ${tone}`;
 }
@@ -125,6 +149,65 @@ function guessDecodeOutput(inputPath) {
   return inputPath.replace(/\.vq(?:\.tar\.gz)?$/i, "") + ".reconstructed.pod5";
 }
 
+function emptyState(icon, title, description) {
+  return `
+    <div class="empty-state">
+      <div class="empty-state-icon">${escapeHtml(icon)}</div>
+      <div class="empty-state-title">${escapeHtml(title)}</div>
+      <p class="empty-state-text">${escapeHtml(description)}</p>
+    </div>
+  `;
+}
+
+function renderInfoRows(rows) {
+  return rows
+    .map(
+      (row) => `
+        <div class="info-row">
+          <span class="info-label">${escapeHtml(row.label)}</span>
+          <strong class="info-value${row.mono ? " mono" : ""}">${escapeHtml(displayValue(row.value, row.fallback))}</strong>
+        </div>
+      `
+    )
+    .join("");
+}
+
+function renderMetricCards(items, extraClass = "") {
+  return `
+    <div class="metric-grid ${extraClass}">
+      ${items
+        .map(
+          (item) => `
+            <div class="metric-card">
+              <span>${escapeHtml(item.label)}</span>
+              <strong>${escapeHtml(displayValue(item.value, item.fallback))}</strong>
+            </div>
+          `
+        )
+        .join("")}
+    </div>
+  `;
+}
+
+function renderPills(items) {
+  return items
+    .filter(Boolean)
+    .map((item) => `<span class="meta-pill">${escapeHtml(item)}</span>`)
+    .join("");
+}
+
+function renderPathList(items) {
+  const entries = Array.isArray(items) ? items : [items];
+  return `
+    <div class="path-list">
+      ${entries
+        .filter((item) => item !== undefined && item !== null && item !== "")
+        .map((item) => `<div class="path-pill mono">${escapeHtml(String(item))}</div>`)
+        .join("")}
+    </div>
+  `;
+}
+
 function updateHeader(viewName) {
   const entry = VIEWS[viewName];
   $("#view-title").textContent = entry.title;
@@ -139,30 +222,48 @@ function activateView(viewName) {
   updateHeader(viewName);
 }
 
-function renderSettingsSummary() {
-  const summary = $("#settings-summary");
-  if (!state.settings) {
-    summary.textContent = "尚未加载设置。";
+function setModalOpen(open) {
+  const modal = $("#settings-modal");
+  if (!modal) {
     return;
   }
-  summary.innerHTML = `
-    <div><strong>Python</strong> ${escapeHtml(state.settings.pythonExecutable)}</div>
-    <div><strong>Repo</strong> ${escapeHtml(state.settings.repoRoot)}</div>
-    <div><strong>Catalog</strong> ${escapeHtml(state.settings.catalogUrl || "内置默认")}</div>
-  `;
+  modal.hidden = !open;
+  modal.setAttribute("aria-hidden", String(!open));
+  document.body.classList.toggle("modal-open", open);
+}
+
+function renderSettingsSummary() {
+  const summary = $("#settings-summary");
+  if (!summary) {
+    return;
+  }
+  if (!state.settings) {
+    summary.innerHTML = emptyState("◎", "尚未加载设置", "读取成功后会在这里展示 Python、仓库目录和 catalog。");
+    return;
+  }
+  summary.innerHTML = renderInfoRows([
+    { label: "Python 可执行文件", value: state.settings.pythonExecutable, mono: true },
+    { label: "SimVQ 仓库根目录", value: state.settings.repoRoot, mono: true },
+    { label: "Catalog URL", value: state.settings.catalogUrl || "内置默认", mono: true },
+  ]);
 }
 
 function renderVersionsSummary() {
   const summary = $("#versions-summary");
-  if (!state.versions) {
-    summary.textContent = "";
+  if (!summary) {
     return;
   }
-  summary.innerHTML = `
-    <div>App ${escapeHtml(state.versions.appVersion)}</div>
-    <div>Electron ${escapeHtml(state.versions.electronVersion)}</div>
-    <div>Node ${escapeHtml(state.versions.nodeVersion)}</div>
-  `;
+  if (!state.versions) {
+    summary.innerHTML = emptyState("◌", "尚未加载版本信息", "App、Electron、Node 和用户数据目录会显示在这里。");
+    return;
+  }
+  summary.innerHTML = renderInfoRows([
+    { label: "App", value: state.versions.appVersion },
+    { label: "Electron", value: state.versions.electronVersion },
+    { label: "Node", value: state.versions.nodeVersion },
+    { label: "Chrome", value: state.versions.chromeVersion },
+    { label: "User Data", value: state.versions.userDataPath, mono: true },
+  ]);
 }
 
 function renderSettingsForm() {
@@ -179,26 +280,43 @@ function renderSettingsForm() {
 function renderDoctor() {
   const summary = $("#doctor-summary");
   const raw = $("#doctor-json");
+  raw.textContent = formatJson(state.doctor);
   if (!state.doctor) {
-    summary.className = "doctor-summary empty";
-    summary.textContent = "尚未运行。";
-    raw.textContent = "";
+    summary.className = "doctor-summary empty-state-host";
+    summary.innerHTML = emptyState("◌", "尚未运行 Doctor", "保存设置后点击“运行 Doctor”即可查看当前环境状态。");
     return;
   }
-  summary.className = "doctor-summary";
-  const checks = Object.entries(state.doctor.checks || {})
-    .map(([name, value]) => `<li><strong>${escapeHtml(name)}</strong> ${escapeHtml(value)}</li>`)
+
+  const checkRows = Object.entries(state.doctor.checks || {})
+    .map(([name, value]) => {
+      const ok = String(value).trim().toLowerCase() === "ok";
+      return `
+        <div class="health-row ${ok ? "ok" : "error"}">
+          <span class="health-icon">${ok ? "✓" : "!"}</span>
+          <div class="health-copy">
+            <strong>${escapeHtml(name)}</strong>
+            <span>${escapeHtml(ok ? "依赖可用" : value)}</span>
+          </div>
+        </div>
+      `;
+    })
     .join("");
+
+  summary.className = "doctor-summary";
   summary.innerHTML = `
-    <div class="metric-grid">
-      <div class="metric-card"><span>Python</span><strong>${escapeHtml(state.doctor.python)}</strong></div>
-      <div class="metric-card"><span>Platform</span><strong>${escapeHtml(state.doctor.platform)}</strong></div>
-      <div class="metric-card"><span>Cache Root</span><strong>${escapeHtml(state.doctor.cache_root)}</strong></div>
-      <div class="metric-card"><span>本地模型数</span><strong>${escapeHtml(state.doctor.local_model_count)}</strong></div>
+    <div class="summary-stack">
+      ${renderMetricCards([
+        { label: "Python", value: state.doctor.python },
+        { label: "Platform", value: state.doctor.platform },
+        { label: "Cache Root", value: state.doctor.cache_root },
+        { label: "本地模型数", value: state.doctor.local_model_count },
+      ])}
+      <section class="detail-block">
+        <h4>依赖检查</h4>
+        <div class="health-list">${checkRows}</div>
+      </section>
     </div>
-    <ul class="bullet-list">${checks}</ul>
   `;
-  raw.textContent = formatJson(state.doctor);
 }
 
 function renderModelDatalist() {
@@ -211,8 +329,8 @@ function renderModelDatalist() {
 function renderRemoteModels() {
   const container = $("#remote-models-list");
   if (!state.remoteModels.length) {
-    container.className = "card-list empty";
-    container.textContent = "暂无远程模型。";
+    container.className = "card-list empty-state-host";
+    container.innerHTML = emptyState("⌁", "暂无远程模型", "刷新 catalog 或检查设置里的远程模型目录地址。");
     return;
   }
   container.className = "card-list";
@@ -220,10 +338,12 @@ function renderRemoteModels() {
     .map(
       (item) => `
         <div class="model-card">
-          <div>
-            <div class="card-title">${escapeHtml(item.name)}</div>
-            <div class="card-meta">version=${escapeHtml(item.version)} · mode=${escapeHtml(item.mode)}</div>
-            <div class="card-meta">variant=${escapeHtml(item.variant)}</div>
+          <div class="card-copy">
+            <div class="card-title-row">
+              <div class="card-title">${escapeHtml(item.name)}</div>
+              <div class="pill-row">${renderPills([item.variant, item.mode])}</div>
+            </div>
+            <div class="card-meta">version ${escapeHtml(item.version)}</div>
           </div>
           <div class="button-row compact">
             <button type="button" data-model-action="pull" data-model-name="${escapeHtml(item.name)}">拉取</button>
@@ -237,8 +357,8 @@ function renderRemoteModels() {
 function renderLocalModels() {
   const container = $("#local-models-list");
   if (!state.localModels.length) {
-    container.className = "card-list empty";
-    container.textContent = "暂无本地模型。";
+    container.className = "card-list empty-state-host";
+    container.innerHTML = emptyState("◍", "暂无本地模型", "拉取远程模型，或在下方注册已有 checkpoint。");
     return;
   }
   container.className = "card-list";
@@ -246,10 +366,13 @@ function renderLocalModels() {
     .map(
       (item) => `
         <div class="model-card">
-          <div>
-            <div class="card-title">${escapeHtml(item.name)}</div>
-            <div class="card-meta">version=${escapeHtml(item.version)} · mode=${escapeHtml(item.mode)}</div>
-            <div class="card-meta">${escapeHtml(item.local_dir || "")}</div>
+          <div class="card-copy">
+            <div class="card-title-row">
+              <div class="card-title">${escapeHtml(item.name)}</div>
+              <div class="pill-row">${renderPills([item.version, item.mode])}</div>
+            </div>
+            <div class="card-meta">${escapeHtml(item.variant)}</div>
+            <div class="card-path mono">${escapeHtml(displayValue(item.local_dir))}</div>
           </div>
           <div class="button-row compact">
             <button type="button" data-model-action="show" data-model-name="${escapeHtml(item.name)}">详情</button>
@@ -262,53 +385,147 @@ function renderLocalModels() {
 }
 
 function renderModelDetail() {
-  $("#model-detail-json").textContent = formatJson(state.selectedModelPayload);
+  const summary = $("#model-detail-summary");
+  const raw = $("#model-detail-json");
+  raw.textContent = formatJson(state.selectedModelPayload);
+  if (!state.selectedModelPayload) {
+    summary.className = "detail-summary empty-state-host";
+    summary.innerHTML = emptyState("◇", "尚未选中模型", "点击本地模型的“详情”，这里会显示版本、运行模式和路径信息。");
+    return;
+  }
+
+  const payload = state.selectedModelPayload;
+  const runtime = payload.runtime || {};
+  summary.className = "detail-summary";
+  summary.innerHTML = `
+    <div class="summary-stack">
+      ${renderMetricCards([
+        { label: "模型名", value: payload.name },
+        { label: "版本", value: payload.version },
+        { label: "Variant", value: payload.variant },
+        { label: "模式", value: payload.mode },
+      ])}
+      <div class="detail-columns">
+        <section class="detail-block">
+          <h4>本地缓存</h4>
+          <div class="info-rows">
+            ${renderInfoRows([
+              { label: "本地目录", value: payload.local_dir, mono: true },
+              { label: "配置文件", value: payload.config_path, mono: true },
+              { label: "Checkpoint", value: payload.checkpoint_path || "未登记", mono: true },
+            ])}
+          </div>
+        </section>
+        <section class="detail-block">
+          <h4>运行时</h4>
+          <div class="info-rows">
+            ${renderInfoRows([
+              { label: "chunk_size", value: runtime.chunk_size },
+              { label: "tokens_per_chunk", value: runtime.tokens_per_chunk },
+              { label: "codebook_size", value: runtime.codebook_size },
+              { label: "source_repo_path", value: runtime.source_repo_path || "内置或未提供", mono: true },
+            ])}
+          </div>
+        </section>
+      </div>
+    </div>
+  `;
 }
 
 function renderInspect() {
   const summary = $("#inspect-summary");
-  $("#inspect-json").textContent = formatJson(state.inspectResult);
+  const raw = $("#inspect-json");
+  raw.textContent = formatJson(state.inspectResult);
   if (!state.inspectResult) {
-    summary.className = "inspect-summary empty";
-    summary.textContent = "暂无结果。";
+    summary.className = "inspect-summary empty-state-host";
+    summary.innerHTML = emptyState("▣", "暂无结果", "选择一个 bundle 并执行 Inspect，这里会显示结构化摘要。");
     return;
   }
+
   const manifest = state.inspectResult;
   const model = manifest.model || {};
   const chunking = manifest.chunking || {};
   const counts = manifest.counts || {};
+  const paths = manifest.paths || {};
+  const pathItems = [
+    paths.reads,
+    paths.run_infos,
+    paths.end_reasons,
+    ...(paths.token_shards || []),
+    ...(paths.norm_stat_shards || []),
+    ...(paths.valid_length_shards || []),
+    ...(paths.start_shards || []),
+  ].filter(Boolean);
+
   summary.className = "inspect-summary";
   summary.innerHTML = `
-    <div class="metric-grid">
-      <div class="metric-card"><span>Bundle Format</span><strong>${escapeHtml(manifest.bundle_format || "—")}</strong></div>
-      <div class="metric-card"><span>Model</span><strong>${escapeHtml(model.model_name || "—")}</strong></div>
-      <div class="metric-card"><span>Reads</span><strong>${escapeHtml(counts.read_count || 0)}</strong></div>
-      <div class="metric-card"><span>Chunks</span><strong>${escapeHtml(counts.chunk_count || 0)}</strong></div>
-      <div class="metric-card"><span>Chunk Size</span><strong>${escapeHtml(chunking.chunk_size || "—")}</strong></div>
-      <div class="metric-card"><span>Hop Size</span><strong>${escapeHtml(chunking.hop_size || "—")}</strong></div>
+    <div class="summary-stack">
+      ${renderMetricCards(
+        [
+          { label: "Bundle Format", value: manifest.bundle_format },
+          { label: "Model", value: model.model_name },
+          { label: "Reads", value: counts.read_count || 0 },
+          { label: "Chunks", value: counts.chunk_count || 0 },
+          { label: "Chunk Size", value: chunking.chunk_size },
+          { label: "Hop Size", value: chunking.hop_size },
+        ],
+        "metric-grid-wide"
+      )}
+      <div class="detail-columns">
+        <section class="detail-block">
+          <h4>模型与分块</h4>
+          <div class="info-rows">
+            ${renderInfoRows([
+              { label: "版本", value: model.model_version },
+              { label: "Variant", value: model.model_variant },
+              { label: "模式", value: model.source_mode },
+              { label: "tokens_per_chunk", value: chunking.tokens_per_chunk },
+              { label: "策略", value: chunking.short_chunk_policy },
+            ])}
+          </div>
+        </section>
+        <section class="detail-block">
+          <h4>打包与路径</h4>
+          <div class="info-rows">
+            ${renderInfoRows([
+              { label: "打包方式", value: manifest.packaging?.kind },
+              { label: "内部目录", value: manifest.packaging?.inner_bundle_dir || "—", mono: true },
+            ])}
+          </div>
+          ${pathItems.length ? renderPathList(pathItems) : ""}
+        </section>
+      </div>
     </div>
   `;
 }
 
 function statusBadge(task) {
-  return `<span class="status-badge ${escapeHtml(task.status)}">${escapeHtml(task.status)}</span>`;
+  const label = TASK_STATUS_LABELS[task.status] || task.status || "未知";
+  return `<span class="status-badge ${escapeHtml(task.status || "unknown")}">${escapeHtml(label)}</span>`;
+}
+
+function taskKindLabel(kind) {
+  return TASK_KIND_LABELS[kind] || kind || "任务";
 }
 
 function renderTasks() {
   const list = $("#tasks-list");
   if (!state.tasks.length) {
-    list.className = "card-list empty";
-    list.textContent = "暂无任务。";
+    list.className = "card-list empty-state-host";
+    list.innerHTML = emptyState("☾", "暂无任务", "启动 Encode 或 Decode 后，日志和结果会出现在这里。");
   } else {
     list.className = "card-list";
     list.innerHTML = state.tasks
       .map(
         (task) => `
           <div class="task-card ${task.id === state.selectedTaskId ? "selected" : ""}" data-task-id="${escapeHtml(task.id)}">
-            <div>
-              <div class="card-title">${escapeHtml(task.kind)} ${statusBadge(task)}</div>
-              <div class="card-meta">${escapeHtml(task.inputPath || "")}</div>
+            <div class="card-copy">
+              <div class="card-title-row">
+                <div class="card-title">${escapeHtml(taskKindLabel(task.kind))}</div>
+                ${statusBadge(task)}
+              </div>
               <div class="card-meta">创建于 ${escapeHtml(formatDateTime(task.createdAt))}</div>
+              <div class="card-path mono">${escapeHtml(displayValue(task.inputPath, "未记录输入路径"))}</div>
             </div>
             <div class="button-row compact">
               <button type="button" data-task-action="select" data-task-id="${escapeHtml(task.id)}">查看</button>
@@ -329,40 +546,69 @@ function renderTasks() {
   const detailJson = $("#task-detail-json");
   const detailLog = $("#task-detail-log");
   if (!selected) {
-    summary.className = "task-detail empty";
-    summary.textContent = "选择左侧任务查看详情。";
+    summary.className = "task-detail empty-state-host";
+    summary.innerHTML = emptyState("◐", "尚未选中任务", "从左侧列表选择一个任务，查看摘要、输出路径和日志。");
     detailJson.textContent = "";
-    detailLog.textContent = "";
+    detailLog.textContent = "暂无日志。";
     return;
   }
 
-  summary.className = "task-detail";
   const result = selected.result || {};
   const outputPath = selected.outputPath || result.output_path || result.output_bundle || result.output_pod5 || "";
+  summary.className = "task-detail";
   summary.innerHTML = `
-    <div class="metric-grid">
-      <div class="metric-card"><span>类型</span><strong>${escapeHtml(selected.kind)}</strong></div>
-      <div class="metric-card"><span>状态</span><strong>${escapeHtml(selected.status)}</strong></div>
-      <div class="metric-card"><span>开始时间</span><strong>${escapeHtml(formatDateTime(selected.startedAt))}</strong></div>
-      <div class="metric-card"><span>结束时间</span><strong>${escapeHtml(formatDateTime(selected.endedAt))}</strong></div>
-    </div>
-    <div class="task-actions">
+    <div class="summary-stack">
+      <div class="summary-heading">
+        <div>
+          <p class="section-kicker">当前任务</p>
+          <h4>${escapeHtml(taskKindLabel(selected.kind))}</h4>
+        </div>
+        ${statusBadge(selected)}
+      </div>
+      ${renderMetricCards([
+        { label: "开始时间", value: formatDateTime(selected.startedAt) },
+        { label: "结束时间", value: formatDateTime(selected.endedAt) },
+        { label: "Reads", value: result.read_count ?? "—" },
+        { label: "Chunks", value: result.chunk_count ?? "—" },
+        { label: "Bundle 大小", value: formatBytes(result.packed_bundle_size_bytes) },
+        { label: "原始目录大小", value: formatBytes(result.raw_bundle_size_bytes) },
+      ])}
       ${
         outputPath
-          ? `<button type="button" data-task-path-action="reveal" data-task-path="${escapeHtml(outputPath)}">定位输出</button>`
+          ? `
+            <div class="task-actions">
+              <button type="button" data-task-path-action="reveal" data-task-path="${escapeHtml(outputPath)}">定位输出</button>
+              <button type="button" data-task-path-action="open" data-task-path="${escapeHtml(outputPath)}" class="ghost-button">打开输出</button>
+            </div>
+          `
           : ""
       }
-      ${
-        outputPath
-          ? `<button type="button" data-task-path-action="open" data-task-path="${escapeHtml(outputPath)}" class="ghost-button">打开输出</button>`
-          : ""
-      }
+      <div class="detail-columns">
+        <section class="detail-block">
+          <h4>执行信息</h4>
+          <div class="info-rows">
+            ${renderInfoRows([
+              { label: "输入", value: selected.inputPath || "未记录", mono: true },
+              { label: "输出", value: outputPath || "未记录", mono: true },
+              { label: "命令", value: selected.commandLine || "未记录", mono: true },
+            ])}
+          </div>
+        </section>
+        <section class="detail-block">
+          <h4>状态补充</h4>
+          <div class="info-rows">
+            ${renderInfoRows([
+              { label: "退出码", value: selected.exitCode ?? "—" },
+              { label: "Signal", value: selected.signal || "—" },
+              { label: "错误", value: selected.error || "无", mono: Boolean(selected.error) },
+            ])}
+          </div>
+        </section>
+      </div>
     </div>
-    <div class="task-inline-meta"><strong>命令</strong> ${escapeHtml(selected.commandLine || "—")}</div>
-    <div class="task-inline-meta"><strong>错误</strong> ${escapeHtml(selected.error || "—")}</div>
   `;
   detailJson.textContent = formatJson(selected.result || selected);
-  detailLog.textContent = selected.logText || selected.stderr || selected.stdout || "";
+  detailLog.textContent = selected.logText || selected.stderr || selected.stdout || "暂无日志。";
 }
 
 function syncTask(task) {
@@ -598,6 +844,22 @@ function bindNav() {
   });
 }
 
+function bindModal() {
+  $("#settings-modal-open").addEventListener("click", () => setModalOpen(true));
+  $("#settings-modal-close").addEventListener("click", () => setModalOpen(false));
+  $("#settings-modal").addEventListener("click", (event) => {
+    const target = event.target;
+    if (target instanceof HTMLElement && "modalClose" in target.dataset) {
+      setModalOpen(false);
+    }
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      setModalOpen(false);
+    }
+  });
+}
+
 function bindActions() {
   $("#settings-form").addEventListener("submit", saveSettings);
   $("#doctor-run-button").addEventListener("click", async () => {
@@ -730,10 +992,14 @@ function subscribeTaskEvents() {
 
 async function bootstrap() {
   bindNav();
+  bindModal();
   bindActions();
   await bindBrowseButtons();
   subscribeTaskEvents();
   await refreshAll();
+  renderModelDetail();
+  renderInspect();
+  renderTasks();
 }
 
 window.addEventListener("DOMContentLoaded", () => {
