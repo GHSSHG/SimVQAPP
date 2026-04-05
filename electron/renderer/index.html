@@ -16,38 +16,88 @@
               <span class="brand-primary">SimVQ</span>
               <span class="brand-secondary">Desktop</span>
             </h1>
+            <p>面向常规电脑用户的压缩与重建工作台</p>
           </div>
         </div>
 
         <nav class="nav">
-          <button class="nav-button active" data-view-target="home">主页 / Doctor</button>
-          <button class="nav-button" data-view-target="models">模型</button>
-          <button class="nav-button" data-view-target="encode">压缩 Encode</button>
-          <button class="nav-button" data-view-target="decode">重建 Decode</button>
-          <button class="nav-button" data-view-target="inspect">Inspect</button>
-          <button class="nav-button" data-view-target="tasks">任务 / 历史</button>
+          <section class="nav-group">
+            <div class="nav-group-label">核心工作流</div>
+            <button class="nav-button active" data-view-target="encode">
+              <span class="nav-icon">压</span>
+              <span class="nav-copy">
+                <strong>压缩 Encode</strong>
+                <small>拖入 POD5 并启动高保真压缩</small>
+              </span>
+            </button>
+            <button class="nav-button" data-view-target="decode">
+              <span class="nav-icon">建</span>
+              <span class="nav-copy">
+                <strong>重建 Decode</strong>
+                <small>从 bundle 还原可用的 POD5 文件</small>
+              </span>
+            </button>
+          </section>
+
+          <div class="nav-divider"></div>
+
+          <section class="nav-group">
+            <div class="nav-group-label">辅助分析</div>
+            <button class="nav-button" data-view-target="tasks">
+              <span class="nav-icon">史</span>
+              <span class="nav-copy">
+                <strong>任务历史</strong>
+                <small>查看进度、结果与日志</small>
+              </span>
+            </button>
+            <button class="nav-button" data-view-target="inspect">
+              <span class="nav-icon">查</span>
+              <span class="nav-copy">
+                <strong>文件探查</strong>
+                <small>快速读取 bundle 的核心信息</small>
+              </span>
+            </button>
+          </section>
+
+          <div class="nav-spacer"></div>
+
+          <section class="nav-group nav-group-bottom">
+            <div class="nav-group-label">全局设置</div>
+            <button class="nav-button" data-view-target="models">
+              <span class="nav-icon">模</span>
+              <span class="nav-copy">
+                <strong>模型管理</strong>
+                <small>查看、拉取和维护本地模型</small>
+              </span>
+            </button>
+            <button class="nav-button" data-view-target="home">
+              <span class="nav-icon">设</span>
+              <span class="nav-copy">
+                <strong>系统设置</strong>
+                <small>配置环境路径并运行自检</small>
+              </span>
+            </button>
+          </section>
         </nav>
       </aside>
 
       <main class="content">
-        <datalist id="all-models-list"></datalist>
-
         <header class="topbar">
           <div>
-            <h2 id="view-title">主页 / Doctor</h2>
-            <p id="view-subtitle">检查环境、保存 Python 与仓库路径，并查看 CLI 健康状态。</p>
+            <h2 id="view-title">压缩 Encode</h2>
+            <p id="view-subtitle">拖入源文件、选择模型，然后开始后台压缩任务。</p>
           </div>
           <div class="toolbar">
             <button id="refresh-all-button" class="ghost-button">刷新全部</button>
           </div>
         </header>
 
-        <section id="view-home" class="view active">
+        <section id="view-home" class="view">
           <div class="layout-split">
             <article class="panel">
               <div class="panel-header">
-                <h3>运行设置</h3>
-                <p class="panel-subtle">这些设置只影响桌面端如何调用本地 Python CLI。</p>
+                <h3>环境与系统设置</h3>
+                <p class="panel-subtle">配置运行环境与模型目录地址，之后即可在桌面端稳定执行任务。</p>
               </div>
               <form id="settings-form" class="form">
                 <label>
@@ -67,7 +117,7 @@
                 </label>
                 <div class="button-row">
                   <button type="submit">保存设置</button>
-                  <button type="button" id="doctor-run-button" class="ghost-button">运行 Doctor</button>
+                  <button type="button" id="doctor-run-button" class="ghost-button">重新检查环境</button>
                 </div>
               </form>
               <div id="settings-message" class="message"></div>
@@ -75,8 +125,8 @@
 
             <article class="panel panel-data">
               <div class="panel-header">
-                <h3>Doctor 结果</h3>
-                <p class="panel-subtle">默认显示结构化状态，原始 JSON 收进调试视图。</p>
+                <h3>系统自检</h3>
+                <p class="panel-subtle">默认显示可读的依赖状态，原始诊断信息只保留在开发者视图中。</p>
               </div>
               <div id="doctor-summary" class="doctor-summary empty-state-host">尚未运行。</div>
               <details class="debug-section">
@@ -92,11 +142,11 @@
             <article class="panel">
               <div class="panel-header stacked">
                 <div>
-                  <h3>远程模型</h3>
-                  <p class="panel-subtle">查看 catalog 中可拉取的模型定义。</p>
+                  <h3>可拉取模型</h3>
+                  <p class="panel-subtle">优先展示可直接拉取的远程模型，便于快速完成部署。</p>
                 </div>
                 <div class="toolbar toolbar-stretch">
-                  <input id="models-catalog-url" type="text" placeholder="沿用设置中的 catalog URL" />
+                  <input id="models-catalog-url" type="text" placeholder="沿用系统设置中的 catalog URL" />
                   <button id="models-refresh-remote" type="button" class="ghost-button">刷新远程</button>
                 </div>
               </div>
@@ -106,8 +156,8 @@
             <article class="panel">
               <div class="panel-header inline">
                 <div>
-                  <h3>本地模型</h3>
-                  <p class="panel-subtle">缓存中的模型可直接用于 GUI 任务。</p>
+                  <h3>本地已安装模型</h3>
+                  <p class="panel-subtle">这些模型可直接出现在压缩与重建页面的下拉选择中。</p>
                 </div>
                 <button id="models-refresh-local" type="button" class="ghost-button">刷新本地</button>
               </div>
@@ -115,63 +165,11 @@
             </article>
           </div>
 
-          <div class="layout-split">
-            <article class="panel">
-              <div class="panel-header">
-                <h3>注册本地模型</h3>
-                <p class="panel-subtle">把已有 checkpoint 注册到本地缓存，供桌面端直接调用。</p>
-              </div>
-              <form id="register-model-form" class="form">
-                <label>
-                  <span>模型名</span>
-                  <input id="register-name" type="text" placeholder="simvq-v45-3x" />
-                </label>
-                <label>
-                  <span>Checkpoint 目录</span>
-                  <div class="input-row">
-                    <input id="register-checkpoint" type="text" placeholder="/path/to/checkpoint_1200000" />
-                    <button type="button" id="register-checkpoint-browse" class="ghost-button">选择目录</button>
-                  </div>
-                </label>
-                <label>
-                  <span>来源仓库</span>
-                  <div class="input-row">
-                    <input id="register-source-repo" type="text" placeholder="/path/to/SimVQGAN" />
-                    <button type="button" id="register-source-repo-browse" class="ghost-button">选择目录</button>
-                  </div>
-                </label>
-                <label>
-                  <span>配置 JSON</span>
-                  <div class="input-row">
-                    <input id="register-config-json" type="text" placeholder="/path/to/train.json" />
-                    <button type="button" id="register-config-json-browse" class="ghost-button">选择文件</button>
-                  </div>
-                </label>
-                <div class="grid two compact-grid">
-                  <label>
-                    <span>版本（可留空）</span>
-                    <input id="register-version" type="text" placeholder="1200000" />
-                  </label>
-                  <label>
-                    <span>Variant</span>
-                    <input id="register-variant" type="text" value="v45" />
-                  </label>
-                </div>
-                <label class="checkbox">
-                  <input id="register-overwrite" type="checkbox" />
-                  <span>允许覆盖已有同名版本</span>
-                </label>
-                <div class="button-row">
-                  <button type="submit">注册模型</button>
-                </div>
-              </form>
-              <div id="models-message" class="message"></div>
-            </article>
-
+          <div class="layout-single">
             <article class="panel panel-data">
               <div class="panel-header">
                 <h3>模型详情</h3>
-                <p class="panel-subtle">优先显示关键信息，调试区保留原始 payload。</p>
+                <p class="panel-subtle">优先展示版本、运行参数与本地路径，原始 payload 默认折叠。</p>
               </div>
               <div id="model-detail-summary" class="detail-summary empty-state-host"></div>
               <details class="debug-section">
@@ -180,73 +178,173 @@
               </details>
             </article>
           </div>
+
+          <div class="layout-single">
+            <article class="panel low-priority-panel">
+              <details class="panel-collapse">
+                <summary>
+                  <span>注册本地模型</span>
+                  <small>只有在已经准备好 checkpoint 时再展开</small>
+                </summary>
+                <div class="panel-collapse-body">
+                  <form id="register-model-form" class="form">
+                    <label>
+                      <span>模型名</span>
+                      <input id="register-name" type="text" placeholder="simvq-v45-3x" />
+                    </label>
+                    <label>
+                      <span>Checkpoint 目录</span>
+                      <div class="input-row">
+                        <input id="register-checkpoint" type="text" placeholder="/path/to/checkpoint_1200000" />
+                        <button type="button" id="register-checkpoint-browse" class="ghost-button">选择目录</button>
+                      </div>
+                    </label>
+                    <label>
+                      <span>来源仓库</span>
+                      <div class="input-row">
+                        <input id="register-source-repo" type="text" placeholder="/path/to/SimVQGAN" />
+                        <button type="button" id="register-source-repo-browse" class="ghost-button">选择目录</button>
+                      </div>
+                    </label>
+                    <label>
+                      <span>配置 JSON</span>
+                      <div class="input-row">
+                        <input id="register-config-json" type="text" placeholder="/path/to/train.json" />
+                        <button type="button" id="register-config-json-browse" class="ghost-button">选择文件</button>
+                      </div>
+                    </label>
+                    <div class="grid two compact-grid">
+                      <label>
+                        <span>版本（可留空）</span>
+                        <input id="register-version" type="text" placeholder="1200000" />
+                      </label>
+                      <label>
+                        <span>Variant</span>
+                        <input id="register-variant" type="text" value="v45" />
+                      </label>
+                    </div>
+                    <label class="checkbox">
+                      <input id="register-overwrite" type="checkbox" />
+                      <span>允许覆盖已有同名版本</span>
+                    </label>
+                    <div class="button-row">
+                      <button type="submit">注册模型</button>
+                    </div>
+                  </form>
+                </div>
+              </details>
+              <div id="models-message" class="message"></div>
+            </article>
+          </div>
         </section>
 
-        <section id="view-encode" class="view">
+        <section id="view-encode" class="view active">
           <div class="workflow-layout">
             <article class="panel">
               <div class="panel-header">
-                <h3>Encode 任务</h3>
-                <p class="panel-subtle">填写输入、模型和输出后启动压缩任务。</p>
+                <h3>压缩任务</h3>
+                <p class="panel-subtle">默认只保留输入、输出和模型三项核心决策，其他参数放进高级设置。</p>
               </div>
               <form id="encode-form" class="form">
-                <label>
-                  <span>输入 POD5</span>
-                  <div class="input-row">
-                    <input id="encode-input" type="text" placeholder="/path/to/input.pod5" />
-                    <button type="button" id="encode-input-browse" class="ghost-button">选择文件</button>
+                <div class="field-group">
+                  <span class="field-label">输入文件</span>
+                  <div
+                    class="picker-card picker-card-dropzone"
+                    data-file-picker="encode-input"
+                    data-browse-button="encode-input-browse"
+                    tabindex="0"
+                  >
+                    <input id="encode-input" type="hidden" />
+                    <div class="picker-leading">
+                      <span class="picker-icon" data-picker-icon>压</span>
+                      <div class="picker-copy">
+                        <span class="picker-kicker" data-picker-kicker>输入文件</span>
+                        <strong data-picker-title>点击选择文件，或将 .pod5 文件拖拽至此</strong>
+                        <p data-picker-description>选中文件后仅展示文件名，完整路径会在悬停时显示。</p>
+                      </div>
+                    </div>
+                    <div class="picker-actions">
+                      <button type="button" id="encode-input-browse" class="ghost-button">选择文件</button>
+                      <button type="button" class="ghost-button" data-picker-clear="encode-input">清空</button>
+                    </div>
                   </div>
-                </label>
-                <label>
-                  <span>输出 Bundle</span>
-                  <div class="input-row">
-                    <input id="encode-output" type="text" placeholder="/path/to/output.vq.tar.gz" />
-                    <button type="button" id="encode-output-browse" class="ghost-button">保存到</button>
-                  </div>
-                </label>
-                <label>
-                  <span>模型名</span>
-                  <input id="encode-model" list="all-models-list" type="text" placeholder="simvq-v45-3x" />
-                </label>
-                <div class="grid three compact-grid">
-                  <label>
-                    <span>Batch Size</span>
-                    <input id="encode-batch-size" type="number" value="128" min="1" />
-                  </label>
-                  <label>
-                    <span>Chunk Size</span>
-                    <input id="encode-chunk-size" type="number" value="12288" min="1" />
-                  </label>
-                  <label>
-                    <span>Hop Size</span>
-                    <input id="encode-hop-size" type="number" value="11688" min="1" />
-                  </label>
                 </div>
+
+                <div class="field-group">
+                  <span class="field-label">输出位置</span>
+                  <div
+                    class="picker-card"
+                    data-file-picker="encode-output"
+                    data-browse-button="encode-output-browse"
+                    tabindex="0"
+                  >
+                    <input id="encode-output" type="hidden" />
+                    <div class="picker-leading">
+                      <span class="picker-icon" data-picker-icon>出</span>
+                      <div class="picker-copy">
+                        <span class="picker-kicker" data-picker-kicker>输出位置</span>
+                        <strong data-picker-title>选择压缩结果的保存位置</strong>
+                        <p data-picker-description>默认会根据输入文件自动生成 .vq.tar.gz 文件名。</p>
+                      </div>
+                    </div>
+                    <div class="picker-actions">
+                      <button type="button" id="encode-output-browse" class="ghost-button">选择位置</button>
+                      <button type="button" class="ghost-button" data-picker-clear="encode-output">清空</button>
+                    </div>
+                  </div>
+                </div>
+
                 <label>
-                  <span>短块策略</span>
-                  <select id="encode-short-policy">
-                    <option value="normalize_then_zero_pad">normalize_then_zero_pad</option>
-                  </select>
+                  <span>压缩模型</span>
+                  <select id="encode-model"></select>
                 </label>
-                <label class="checkbox">
-                  <input id="encode-overwrite" type="checkbox" />
-                  <span>允许覆盖输出文件</span>
-                </label>
+                <p class="field-hint">直接从本地已注册模型中选择，避免手动输入模型名带来的拼写错误。</p>
+
+                <details class="advanced-panel">
+                  <summary>展开高级设置</summary>
+                  <div class="advanced-panel-body">
+                    <div class="grid three compact-grid">
+                      <label>
+                        <span>Batch Size</span>
+                        <input id="encode-batch-size" type="number" value="128" min="1" />
+                      </label>
+                      <label>
+                        <span>Chunk Size</span>
+                        <input id="encode-chunk-size" type="number" value="12288" min="1" />
+                      </label>
+                      <label>
+                        <span>Hop Size</span>
+                        <input id="encode-hop-size" type="number" value="11688" min="1" />
+                      </label>
+                    </div>
+                    <label>
+                      <span>短块策略</span>
+                      <select id="encode-short-policy">
+                        <option value="normalize_then_zero_pad">normalize_then_zero_pad</option>
+                      </select>
+                    </label>
+                    <label class="checkbox">
+                      <input id="encode-overwrite" type="checkbox" />
+                      <span>允许覆盖已有输出文件</span>
+                    </label>
+                  </div>
+                </details>
+
                 <div class="button-row">
-                  <button type="submit" class="primary-button">开始 Encode</button>
+                  <button type="submit" class="primary-button">开始压缩</button>
                 </div>
               </form>
               <div id="encode-message" class="message"></div>
             </article>
 
             <aside class="helper-rail">
-              <div class="helper-note">
-                <h3>执行提示</h3>
-                <ul class="tips">
-                  <li>GUI 只负责参数组织和任务管理，推理仍由 Python CLI 执行。</li>
-                  <li>短参数输入框已按数字类字段收窄，主要关注模型、输入和输出路径即可。</li>
-                  <li>任务启动后，日志和结果会自动流入“任务 / 历史”。</li>
-                </ul>
+              <div class="helper-note helper-note-guide">
+                <h3>操作引导</h3>
+                <ol class="guide-list">
+                  <li>拖入源文件，或点击选择 `.pod5` 文件。</li>
+                  <li>从本地可用模型中选择对应的压缩模型。</li>
+                  <li>点击开始，系统会在后台自动完成高保真压缩。</li>
+                </ol>
               </div>
             </aside>
           </div>
@@ -256,51 +354,93 @@
           <div class="workflow-layout">
             <article class="panel">
               <div class="panel-header">
-                <h3>Decode 任务</h3>
-                <p class="panel-subtle">从 bundle 恢复 POD5，并把输出和日志统一沉淀到任务面板。</p>
+                <h3>重建任务</h3>
+                <p class="panel-subtle">把 bundle 还原为 POD5 文件，仅默认展示最关键的三项输入。</p>
               </div>
               <form id="decode-form" class="form">
-                <label>
-                  <span>输入 Bundle</span>
-                  <div class="input-row">
-                    <input id="decode-input" type="text" placeholder="/path/to/input.vq.tar.gz" />
-                    <button type="button" id="decode-input-browse" class="ghost-button">选择文件</button>
+                <div class="field-group">
+                  <span class="field-label">输入 Bundle</span>
+                  <div
+                    class="picker-card picker-card-dropzone"
+                    data-file-picker="decode-input"
+                    data-browse-button="decode-input-browse"
+                    tabindex="0"
+                  >
+                    <input id="decode-input" type="hidden" />
+                    <div class="picker-leading">
+                      <span class="picker-icon" data-picker-icon>建</span>
+                      <div class="picker-copy">
+                        <span class="picker-kicker" data-picker-kicker>输入文件</span>
+                        <strong data-picker-title>点击选择文件，或将 bundle 拖拽至此</strong>
+                        <p data-picker-description>支持 `.vq.tar.gz` 或 `.vq` 文件，完整路径仅在悬停时显示。</p>
+                      </div>
+                    </div>
+                    <div class="picker-actions">
+                      <button type="button" id="decode-input-browse" class="ghost-button">选择文件</button>
+                      <button type="button" class="ghost-button" data-picker-clear="decode-input">清空</button>
+                    </div>
                   </div>
-                </label>
-                <label>
-                  <span>输出 POD5</span>
-                  <div class="input-row">
-                    <input id="decode-output" type="text" placeholder="/path/to/output.pod5" />
-                    <button type="button" id="decode-output-browse" class="ghost-button">保存到</button>
+                </div>
+
+                <div class="field-group">
+                  <span class="field-label">输出位置</span>
+                  <div
+                    class="picker-card"
+                    data-file-picker="decode-output"
+                    data-browse-button="decode-output-browse"
+                    tabindex="0"
+                  >
+                    <input id="decode-output" type="hidden" />
+                    <div class="picker-leading">
+                      <span class="picker-icon" data-picker-icon>出</span>
+                      <div class="picker-copy">
+                        <span class="picker-kicker" data-picker-kicker>输出位置</span>
+                        <strong data-picker-title>选择重建结果的保存位置</strong>
+                        <p data-picker-description>默认会根据输入 bundle 自动生成 `.reconstructed.pod5` 文件名。</p>
+                      </div>
+                    </div>
+                    <div class="picker-actions">
+                      <button type="button" id="decode-output-browse" class="ghost-button">选择位置</button>
+                      <button type="button" class="ghost-button" data-picker-clear="decode-output">清空</button>
+                    </div>
                   </div>
-                </label>
+                </div>
+
                 <label>
-                  <span>模型名</span>
-                  <input id="decode-model" list="all-models-list" type="text" placeholder="simvq-v45-3x" />
+                  <span>重建模型</span>
+                  <select id="decode-model"></select>
                 </label>
-                <label>
-                  <span>Batch Size</span>
-                  <input id="decode-batch-size" type="number" value="128" min="1" />
-                </label>
-                <label class="checkbox">
-                  <input id="decode-overwrite" type="checkbox" />
-                  <span>允许覆盖输出文件</span>
-                </label>
+                <p class="field-hint">这里同样只显示本地已安装模型，确保任务可以直接执行。</p>
+
+                <details class="advanced-panel">
+                  <summary>展开高级设置</summary>
+                  <div class="advanced-panel-body">
+                    <label>
+                      <span>Batch Size</span>
+                      <input id="decode-batch-size" type="number" value="128" min="1" />
+                    </label>
+                    <label class="checkbox">
+                      <input id="decode-overwrite" type="checkbox" />
+                      <span>允许覆盖已有输出文件</span>
+                    </label>
+                  </div>
+                </details>
+
                 <div class="button-row">
-                  <button type="submit" class="primary-button">开始 Decode</button>
+                  <button type="submit" class="primary-button">开始重建</button>
                 </div>
               </form>
               <div id="decode-message" class="message"></div>
             </article>
 
             <aside class="helper-rail">
-              <div class="helper-note">
-                <h3>执行提示</h3>
-                <ul class="tips">
-                  <li>Decode 会校验 bundle 中记录的模型名，先 Inspect 再重建更稳妥。</li>
-                  <li>这里只保留必要表单，详细输出路径和命令行记录放在任务详情里。</li>
-                  <li>如果目标路径已存在，记得显式勾选覆盖。</li>
-                </ul>
+              <div class="helper-note helper-note-guide">
+                <h3>操作引导</h3>
+                <ol class="guide-list">
+                  <li>拖入需要还原的 bundle 文件。</li>
+                  <li>选择与 bundle 对应的本地模型。</li>
+                  <li>点击开始，系统会在后台自动完成重建并记录结果。</li>
+                </ol>
               </div>
             </aside>
           </div>
@@ -310,19 +450,35 @@
           <div class="layout-split">
             <article class="panel">
               <div class="panel-header">
-                <h3>Inspect Bundle</h3>
-                <p class="panel-subtle">读取 bundle manifest，并把关键字段整理成可读摘要。</p>
+                <h3>文件探查</h3>
+                <p class="panel-subtle">快速读取 bundle 的关键字段，帮助你先理解内容再决定是否重建。</p>
               </div>
               <form id="inspect-form" class="form">
-                <label>
-                  <span>Bundle 路径</span>
-                  <div class="input-row">
-                    <input id="inspect-input" type="text" placeholder="/path/to/input.vq.tar.gz" />
-                    <button type="button" id="inspect-input-browse" class="ghost-button">选择文件</button>
+                <div class="field-group">
+                  <span class="field-label">Bundle 文件</span>
+                  <div
+                    class="picker-card picker-card-dropzone"
+                    data-file-picker="inspect-input"
+                    data-browse-button="inspect-input-browse"
+                    tabindex="0"
+                  >
+                    <input id="inspect-input" type="hidden" />
+                    <div class="picker-leading">
+                      <span class="picker-icon" data-picker-icon>查</span>
+                      <div class="picker-copy">
+                        <span class="picker-kicker" data-picker-kicker>待探查文件</span>
+                        <strong data-picker-title>点击选择文件，或将 bundle 拖拽至此</strong>
+                        <p data-picker-description>读取完成后将只展示模型、分块和计数等核心信息。</p>
+                      </div>
+                    </div>
+                    <div class="picker-actions">
+                      <button type="button" id="inspect-input-browse" class="ghost-button">选择文件</button>
+                      <button type="button" class="ghost-button" data-picker-clear="inspect-input">清空</button>
+                    </div>
                   </div>
-                </label>
+                </div>
                 <div class="button-row">
-                  <button type="submit">Inspect</button>
+                  <button type="submit">开始探查</button>
                 </div>
               </form>
               <div id="inspect-message" class="message"></div>
@@ -330,8 +486,8 @@
 
             <article class="panel panel-data">
               <div class="panel-header">
-                <h3>Manifest 摘要</h3>
-                <p class="panel-subtle">默认只看模型、分块、计数和路径，原始 JSON 收进调试区。</p>
+                <h3>探查结果</h3>
+                <p class="panel-subtle">优先显示普通用户真正需要看的字段，原始 JSON 只保留在开发者开关中。</p>
               </div>
               <div id="inspect-summary" class="inspect-summary empty-state-host">暂无结果。</div>
               <details class="debug-section">
@@ -347,8 +503,8 @@
             <article class="panel">
               <div class="panel-header inline">
                 <div>
-                  <h3>任务列表</h3>
-                  <p class="panel-subtle">最近的 encode / decode 任务会保留在这里。</p>
+                  <h3>任务历史</h3>
+                  <p class="panel-subtle">按类型、文件名和状态查看最近的压缩与重建任务。</p>
                 </div>
                 <button id="tasks-refresh-button" type="button" class="ghost-button">刷新任务</button>
               </div>
@@ -358,15 +514,15 @@
             <article class="panel panel-data">
               <div class="panel-header">
                 <h3>任务详情</h3>
-                <p class="panel-subtle">优先展示摘要、输出操作和日志，JSON 退到调试层。</p>
+                <p class="panel-subtle">默认呈现耗时、状态和输出结果，原始 JSON 收进开发者视图。</p>
               </div>
               <div id="task-detail-summary" class="task-detail empty-state-host">选择左侧任务查看详情。</div>
               <details class="debug-section">
-                <summary>查看结果 JSON</summary>
+                <summary>查看原始结果 JSON</summary>
                 <pre id="task-detail-json" class="json-output"></pre>
               </details>
               <div class="log-panel">
-                <div class="log-panel-header">任务日志</div>
+                <div class="log-panel-header">运行日志</div>
                 <pre id="task-detail-log" class="log-output"></pre>
               </div>
             </article>

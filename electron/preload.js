@@ -1,4 +1,4 @@
-const { contextBridge, ipcRenderer } = require("electron");
+const { contextBridge, ipcRenderer, webUtils } = require("electron");
 
 function invoke(channel, payload) {
   return ipcRenderer.invoke(channel, payload);
@@ -6,6 +6,13 @@ function invoke(channel, payload) {
 
 contextBridge.exposeInMainWorld("simvq", {
   getVersions: () => invoke("simvq:app:versions"),
+  getPathForFile: (file) => {
+    try {
+      return webUtils.getPathForFile(file);
+    } catch (_error) {
+      return "";
+    }
+  },
   getSettings: () => invoke("simvq:settings:get"),
   updateSettings: (patch) => invoke("simvq:settings:update", patch),
   pickPath: (options) => invoke("simvq:dialog:pick", options),
